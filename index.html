@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arijeem Insight 360 | Pepsi Enterprise System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
+    <!-- Database Status Indicator -->
+    <div id="dbStatus" style="display: none; position: fixed; top: 10px; right: 10px; background: #10b981; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; z-index: 10000;">
+        <i class="fas fa-database"></i> Database Connected
+    </div>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="pepsi-loader">
+                <div class="pepsi-circle blue"></div>
+                <div class="pepsi-circle red"></div>
+                <div class="pepsi-circle white"></div>
+            </div>
+            <h2>Arijeem Insight 360</h2>
+            <p id="loadingMessage">Connecting to Database...</p>
+            <div id="databaseStatus" style="margin-top: 20px; font-size: 14px;">
+                <i class="fas fa-spinner fa-spin"></i> Initializing database connection...
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="mainContainer" style="display: none;">
+        
+        <!-- ===== SETUP SCREEN ===== -->
+        <div id="setupScreen" class="setup-container">
+            <div class="setup-header">
+                <div class="setup-logo">
+                    <span class="logo-icon">🚀</span>
+                    <h1>Arijeem <span class="blue-text">Insight</span> <span class="red-text">360</span></h1>
+                </div>
+                <p class="setup-subtitle">First-Time System Setup</p>
+                <div class="setup-status" id="setupDatabaseStatus">
+                    <i class="fas fa-database"></i> Database: <span id="dbStatusText">Initializing...</span>
+                </div>
+            </div>
+
+            <!-- Setup Wizard -->
+            <div class="setup-wizard">
+                <!-- Step 1: CEO Account -->
+                <div id="step1" class="setup-step active">
+                    <div class="step-header">
+                        <span class="step-number">1</span>
+                        <h3>Create CEO Account</h3>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="setup-info">
+                            <i class="fas fa-info-circle"></i>
+                            <p>This account will be created in the database with full system access.</p>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-user-tie"></i> CEO Full Name</label>
+                            <input type="text" id="ceoName" placeholder="Chief Executive Officer" class="form-control" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-envelope"></i> CEO Email</label>
+                            <input type="email" id="ceoEmail" placeholder="ceo@arijeem.pepsi.com" class="form-control" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-lock"></i> CEO Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="ceoPassword" placeholder="Create strong password" class="form-control" required minlength="8">
+                                <button type="button" class="toggle-password" onclick="togglePassword('ceoPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="password-hint">Password will be encrypted and stored securely</small>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label><i class="fas fa-lock"></i> Confirm Password</label>
+                            <input type="password" id="ceoConfirmPassword" placeholder="Re-enter password" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button class="btn-next" onclick="goToStep(2)">
+                            Next: Security Codes <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Security Codes -->
+                <div id="step2" class="setup-step">
+                    <div class="step-header">
+                        <span class="step-number">2</span>
+                        <h3>Set Security Codes</h3>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="setup-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <p>Security codes are required for multi-layer authentication.</p>
+                        </div>
+                        
+                        <div class="security-codes">
+                            <div class="code-item">
+                                <div class="code-icon">
+                                    <i class="fas fa-door-open"></i>
+                                </div>
+                                <div class="code-info">
+                                    <h4>Entry Code</h4>
+                                    <p>Required for all user logins</p>
+                                    <input type="text" id="entryCode" placeholder="4 digits" maxlength="4" class="code-input" oninput="validateNumeric(this)" required>
+                                    <small class="code-hint">Will be stored in database</small>
+                                </div>
+                            </div>
+                            
+                            <div class="code-item">
+                                <div class="code-icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="code-info">
+                                    <h4>Stock Code</h4>
+                                    <p>Admin/Manager stock operations</p>
+                                    <input type="text" id="stockCode" placeholder="6 digits" maxlength="6" class="code-input" oninput="validateNumeric(this)" required>
+                                    <small class="code-hint">For inventory management</small>
+                                </div>
+                            </div>
+                            
+                            <div class="code-item">
+                                <div class="code-icon">
+                                    <i class="fas fa-user-crown"></i>
+                                </div>
+                                <div class="code-info">
+                                    <h4>Override Code</h4>
+                                    <p>CEO emergency access</p>
+                                    <input type="text" id="overrideCode" placeholder="8 digits" maxlength="8" class="code-input" oninput="validateNumeric(this)" required>
+                                    <small class="code-hint">CEO privilege only</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button class="btn-back" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button class="btn-next" onclick="goToStep(3)">
+                            Next: Team Setup <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Team Setup -->
+                <div id="step3" class="setup-step">
+                    <div class="step-header">
+                        <span class="step-number">3</span>
+                        <h3>Setup Team Accounts</h3>
+                    </div>
+                    
+                    <div class="step-content">
+                        <div class="setup-info">
+                            <i class="fas fa-users"></i>
+                            <p>Create team accounts with role-based permissions. <strong>Set passwords for each account.</strong></p>
+                        </div>
+                        
+                        <div class="team-grid">
+                            <!-- Admin -->
+                            <div class="team-card">
+                                <div class="team-header admin">
+                                    <i class="fas fa-user-tie"></i>
+                                    <h4>Admin</h4>
+                                    <span class="team-badge">Full Access</span>
+                                </div>
+                                <div class="team-body">
+                                    <input type="email" id="adminEmail" placeholder="admin@arijeem.pepsi.com" class="team-input" value="admin@arijeem.pepsi.com" required>
+                                    <div class="password-wrapper">
+                                        <input type="password" id="adminPassword" placeholder="Admin Password" class="team-input" value="Admin@123" required minlength="6">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('adminPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" id="adminName" placeholder="Admin Name" class="team-input" value="System Administrator" required>
+                                </div>
+                                <div class="team-footer">
+                                    <small><i class="fas fa-database"></i> Database table: users</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Manager -->
+                            <div class="team-card">
+                                <div class="team-header manager">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    <h4>Manager</h4>
+                                    <span class="team-badge">Stock Access</span>
+                                </div>
+                                <div class="team-body">
+                                    <input type="email" id="managerEmail" placeholder="manager@arijeem.pepsi.com" class="team-input" value="manager@arijeem.pepsi.com" required>
+                                    <div class="password-wrapper">
+                                        <input type="password" id="managerPassword" placeholder="Manager Password" class="team-input" value="Manager@123" required minlength="6">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('managerPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" id="managerName" placeholder="Manager Name" class="team-input" value="Store Manager" required>
+                                </div>
+                                <div class="team-footer">
+                                    <small><i class="fas fa-database"></i> Database table: users</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Staff -->
+                            <div class="team-card">
+                                <div class="team-header staff">
+                                    <i class="fas fa-user"></i>
+                                    <h4>Staff</h4>
+                                    <span class="team-badge">Basic Access</span>
+                                </div>
+                                <div class="team-body">
+                                    <input type="email" id="staffEmail" placeholder="staff@arijeem.pepsi.com" class="team-input" value="staff@arijeem.pepsi.com" required>
+                                    <div class="password-wrapper">
+                                        <input type="password" id="staffPassword" placeholder="Staff Password" class="team-input" value="Staff@123" required minlength="6">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('staffPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" id="staffName" placeholder="Staff Name" class="team-input" value="Sales Staff" required>
+                                </div>
+                                <div class="team-footer">
+                                    <small><i class="fas fa-database"></i> Database table: users</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Customer -->
+                            <div class="team-card">
+                                <div class="team-header customer">
+                                    <i class="fas fa-headset"></i>
+                                    <h4>Customer</h4>
+                                    <span class="team-badge">External Access</span>
+                                </div>
+                                <div class="team-body">
+                                    <input type="email" id="customerEmail" placeholder="customer@pepsi.com" class="team-input" value="customer@pepsi.com" required>
+                                    <div class="password-wrapper">
+                                        <input type="password" id="customerPassword" placeholder="Customer Password" class="team-input" value="Customer@123" required minlength="6">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('customerPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text" id="customerName" placeholder="Customer Name" class="team-input" value="Valued Customer" required>
+                                </div>
+                                <div class="team-footer">
+                                    <small><i class="fas fa-database"></i> Database table: users</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setup-warning">
+                            <i class="fas fa-info-circle"></i>
+                            <p><strong>Note:</strong> All team accounts have pre-filled values. You can modify passwords as needed.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button class="btn-back" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button class="btn-setup" onclick="completeSetup()">
+                            <i class="fas fa-check"></i> Complete Setup & Save to Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="setup-footer">
+                <p><i class="fas fa-database"></i> Connected to: <strong>twnbpdqssvzuvdlfzdum.supabase.co</strong></p>
+                <p>© 2024 Arijeem Multipurpose Enterprises | Under Pepsi Corporation</p>
+                <p class="setup-version">v1.0.0 | Real Database System</p>
+            </div>
+        </div>
+
+        <!-- ===== LOGIN SCREEN ===== -->
+        <div id="loginScreen" class="login-container" style="display: none;">
+            <div class="login-header">
+                <div class="login-logo">
+                    <span class="logo-icon">📊</span>
+                    <h1>Arijeem <span class="blue-text">Insight</span> <span class="red-text">360</span></h1>
+                </div>
+                <p class="login-subtitle">Enterprise Control System</p>
+                <div class="login-db-status">
+                    <i class="fas fa-database"></i>
+                    <span id="loginDbStatus">Database Connected</span>
+                    <span class="db-product-count">• 24 Products Available</span>
+                </div>
+            </div>
+
+            <div class="login-card">
+                <div class="role-selector">
+                    <h3><i class="fas fa-user-shield"></i> Select Access Level</h3>
+                    <p class="role-subtitle">Authentication via database records</p>
+                    <div class="role-grid">
+                        <button class="role-btn ceo" onclick="selectRole('CEO')">
+                            <i class="fas fa-crown"></i>
+                            <span>CEO</span>
+                            <small>Full Database Access</small>
+                        </button>
+                        <button class="role-btn admin" onclick="selectRole('Admin')">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Admin</span>
+                            <small>Database Management</small>
+                        </button>
+                        <button class="role-btn manager" onclick="selectRole('Manager')">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Manager</span>
+                            <small>Stock Database Access</small>
+                        </button>
+                        <button class="role-btn staff" onclick="selectRole('Staff')">
+                            <i class="fas fa-user"></i>
+                            <span>Staff</span>
+                            <small>Database Read Access</small>
+                        </button>
+                        <button class="role-btn customer" onclick="selectRole('Customer')">
+                            <i class="fas fa-headset"></i>
+                            <span>Customer</span>
+                            <small>External Database Access</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="login-form">
+                    <h3><i class="fas fa-lock"></i> Database Authentication</h3>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-envelope"></i> Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="your@email.com" class="form-control" required>
+                        <small class="field-hint">Must exist in users table</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label><i class="fas fa-key"></i> Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="loginPassword" placeholder="••••••••" class="form-control" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="field-hint">Verified against database</small>
+                    </div>
+
+                    <div class="security-layers">
+                        <div class="input-group">
+                            <label class="security-label">
+                                <i class="fas fa-door-closed"></i> Entry Code
+                                <span class="security-level">Required</span>
+                            </label>
+                            <input type="password" id="loginEntryCode" placeholder="XXXX" maxlength="4" class="security-input" oninput="validateNumeric(this)" required>
+                            <small class="field-hint">From users.entry_code column</small>
+                        </div>
+
+                        <div class="input-group stock-code-input" style="display: none;">
+                            <label class="security-label">
+                                <i class="fas fa-boxes"></i> Stock Code
+                                <span class="security-level">Admin/Manager</span>
+                            </label>
+                            <input type="password" id="loginStockCode" placeholder="XXXXXX" maxlength="6" class="security-input" oninput="validateNumeric(this)" required>
+                            <small class="field-hint">From users.stock_code column</small>
+                        </div>
+
+                        <div class="input-group override-code-input" style="display: none;">
+                            <label class="security-label">
+                                <i class="fas fa-user-crown"></i> Override Code
+                                <span class="security-level red-text">CEO Only</span>
+                            </label>
+                            <input type="password" id="loginOverrideCode" placeholder="XXXXXXXX" maxlength="8" class="security-input" oninput="validateNumeric(this)" required>
+                            <small class="field-hint">From users.override_code column</small>
+                        </div>
+                    </div>
+
+                    <div class="login-actions">
+                        <button class="btn-login" onclick="login()">
+                            <i class="fas fa-sign-in-alt"></i> Login with Database
+                        </button>
+                    </div>
+
+                    <div class="security-info">
+                        <p><i class="fas fa-database"></i> All credentials verified against database tables</p>
+                        <p><i class="fas fa-history"></i> Login attempts logged in database</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-footer">
+                <p><i class="fas fa-server"></i> Database: Supabase • Tables: 5 • Products: 24</p>
+                <p>© 2024 Arijeem Multipurpose Enterprises | Under Pepsi Corporation</p>
+                <p class="login-version">v1.0.0 | Real Database Authentication</p>
+            </div>
+        </div>
+
+        <!-- ===== CEO DASHBOARD ===== -->
+        <div id="ceoDashboard" class="dashboard-container" style="display: none;">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <button class="btn-back" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                    <div class="user-info">
+                        <div class="avatar ceo-avatar">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div>
+                            <h2 id="ceoUserName">CEO Dashboard</h2>
+                            <p class="user-email" id="ceoUserEmail">ceo@arijeem.pepsi.com</p>
+                            <p class="user-db-id" id="ceoUserId"><i class="fas fa-id-card"></i> Database ID: <span id="userIdText">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <h1><span class="blue-text">CEO</span> <span class="red-text">Dashboard</span></h1>
+                    <div class="live-status">
+                        <span class="status-dot active"></span>
+                        <span>Live Database Connection</span>
+                        <span class="db-connection">
+                            <i class="fas fa-database"></i>
+                            <span id="dbConnectionStatus">Connected</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="time-display">
+                        <i class="fas fa-clock"></i>
+                        <span id="currentTime">00:00:00</span>
+                    </div>
+                    <button class="btn-alert" onclick="showAlerts()">
+                        <i class="fas fa-bell"></i>
+                        <span class="alert-badge" id="alertCount">0</span>
+                    </button>
+                    <div class="db-stats">
+                        <i class="fas fa-chart-bar"></i>
+                        <span id="liveStats">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="quick-stats" id="ceoQuickStats">
+                <!-- Loaded from database -->
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <div class="dashboard-left">
+                    <!-- Sales Chart -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Sales Overview</h3>
+                            <div class="card-subtitle">Real-time data from database</div>
+                            <button class="btn-card-action" onclick="viewSalesReport()">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                        <div class="chart-footer">
+                            <i class="fas fa-database"></i> Data Source: <code>sales</code> table
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-history"></i> Recent Database Activity</h3>
+                            <div class="card-subtitle">Live updates from stock_changes</div>
+                            <button class="btn-card-action" onclick="viewActivityLogs()">
+                                View All
+                            </button>
+                        </div>
+                        <div class="activity-list" id="ceoActivityList">
+                            <!-- Loaded from database -->
+                        </div>
+                        <div class="activity-footer">
+                            <i class="fas fa-database"></i> Source: <code>stock_changes</code> table
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-right">
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bolt"></i> Database Actions</h3>
+                        </div>
+                        <div class="action-grid">
+                            <button class="btn-action" onclick="addStockModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Stock</span>
+                                <small>Update products table</small>
+                            </button>
+                            <button class="btn-action" onclick="generateReport()">
+                                <i class="fas fa-file-export"></i>
+                                <span>Database Report</span>
+                                <small>Export all tables</small>
+                            </button>
+                            <button class="btn-action" onclick="manageUsers()">
+                                <i class="fas fa-users-cog"></i>
+                                <span>User Management</span>
+                                <small>Update users table</small>
+                            </button>
+                            <button class="btn-action" onclick="viewProducts()">
+                                <i class="fas fa-box-open"></i>
+                                <span>View Products</span>
+                                <small>Browse all products</small>
+                            </button>
+                            <button class="btn-action" onclick="overrideStock()">
+                                <i class="fas fa-user-crown"></i>
+                                <span>CEO Override</span>
+                                <small>Emergency actions</small>
+                            </button>
+                            <button class="btn-action" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Refresh Data</span>
+                                <small>Update from database</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock -->
+                    <div class="dashboard-card alert-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-exclamation-circle red-text"></i> Low Stock Alert</h3>
+                            <div class="card-subtitle">Real-time monitoring</div>
+                        </div>
+                        <div class="stock-list" id="lowStockList">
+                            <!-- Loaded from database -->
+                        </div>
+                        <div class="stock-footer">
+                            <i class="fas fa-database"></i> Monitored: <code>products.current_qty</code>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-server"></i> Database Status</h3>
+                        </div>
+                        <div class="status-list">
+                            <div class="status-item online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Supabase Connection</span>
+                                <span class="status-text" id="dbStatusIndicator">Online</span>
+                            </div>
+                            <div class="status-item online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Tables Access</span>
+                                <span class="status-text">5/5 Tables</span>
+                            </div>
+                            <div class="status-item online">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Real-time Updates</span>
+                                <span class="status-text">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <i class="fas fa-box"></i>
+                                <span>Products</span>
+                                <span class="status-text" id="productCountStatus">24 Items</span>
+                            </div>
+                            <div class="status-item">
+                                <i class="fas fa-users"></i>
+                                <span>Users</span>
+                                <span class="status-text" id="userCountStatus">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Footer -->
+            <div class="dashboard-footer">
+                <div class="footer-left">
+                    <span><i class="fas fa-database"></i> Database: <strong>Supabase</strong></span>
+                    <span><i class="fas fa-table"></i> Active Tables: <strong id="activeTables">5</strong></span>
+                    <span><i class="fas fa-clock"></i> Session: <span id="sessionTimer">30:00</span></span>
+                </div>
+                <div class="footer-right">
+                    <button class="btn-footer" onclick="printReport()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button class="btn-footer" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn-footer" onclick="showDatabaseInfo()">
+                        <i class="fas fa-info-circle"></i> DB Info
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Info Modal -->
+    <div id="dbInfoModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3><i class="fas fa-database"></i> Database Connection Info</h3>
+            <div class="db-info">
+                <p><strong>Status:</strong> <span id="modalDbStatus" class="success">Connected</span></p>
+                <p><strong>URL:</strong> <code>twnbpdqssvzuvdlfzdum.supabase.co</code></p>
+                <p><strong>Tables Created:</strong> 5 tables</p>
+                <p><strong>Products Loaded:</strong> 24 items</p>
+                <p><strong>Users:</strong> <span id="modalUserCount">0</span> accounts</p>
+                <p><strong>Last Sync:</strong> <span id="lastSyncTime">Just now</span></p>
+            </div>
+            <button class="btn-close" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="database.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- Simple initialization only -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simple validation helper
+            window.validateNumeric = function(input) {
+                input.value = input.value.replace(/[^0-9]/g, '');
+            };
+            
+            // Modal functions
+            window.showDatabaseInfo = function() {
+                const modal = document.getElementById('dbInfoModal');
+                if (modal) modal.style.display = 'flex';
+            };
+            
+            window.closeModal = function() {
+                const modal = document.getElementById('dbInfoModal');
+                if (modal) modal.style.display = 'none';
+            };
+            
+            window.printReport = function() {
+                window.print();
+            };
+        });
+    </script>
+</body>
+</html>

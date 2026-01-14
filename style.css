@@ -447,16 +447,8 @@ h1 {
     background: linear-gradient(135deg, var(--pepsi-blue), var(--pepsi-light-blue));
 }
 
-.team-header.manager {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
 .team-header.staff {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-}
-
-.team-header.customer {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
 .team-body {
@@ -579,7 +571,7 @@ h1 {
 
 .role-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 15px;
 }
 
@@ -601,11 +593,9 @@ h1 {
     box-shadow: var(--shadow-md);
 }
 
-.role-btn.ceo:hover { border-color: gold; background: #fff9db; }
+.role-btn.general-manager:hover { border-color: gold; background: #fff9db; }
 .role-btn.admin:hover { border-color: var(--pepsi-blue); background: #eff6ff; }
-.role-btn.manager:hover { border-color: #10b981; background: #f0fdf4; }
-.role-btn.staff:hover { border-color: #8b5cf6; background: #f5f3ff; }
-.role-btn.customer:hover { border-color: #f59e0b; background: #fffbeb; }
+.role-btn.sales-management:hover { border-color: #8b5cf6; background: #f5f3ff; }
 
 .role-btn i {
     font-size: 24px;
@@ -707,7 +697,7 @@ h1 {
     margin-top: 5px;
 }
 
-/* ===== CEO DASHBOARD ===== */
+/* ===== DASHBOARD STYLES ===== */
 .dashboard-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -767,7 +757,7 @@ h1 {
     color: white;
 }
 
-.ceo-avatar {
+.gm-avatar {
     background: linear-gradient(135deg, gold, #f59e0b);
 }
 
@@ -775,16 +765,8 @@ h1 {
     background: linear-gradient(135deg, var(--pepsi-blue), var(--pepsi-light-blue));
 }
 
-.manager-avatar {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.staff-avatar {
+.sales-avatar {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-}
-
-.customer-avatar {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
 .header-center {
@@ -1187,6 +1169,207 @@ h1 {
     background: var(--gray-200);
 }
 
+/* ===== ACTION FORMS (ON-PAGE, NOT POPUPS) ===== */
+.action-form-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.action-form {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp 0.3s ease;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.form-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-800);
+}
+
+.btn-close-form {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-close-form:hover {
+    background: var(--gray-100);
+    color: var(--pepsi-red);
+}
+
+.form-body {
+    padding: 30px;
+}
+
+.sale-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.sale-form-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+.override-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.security-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.security-warning i {
+    color: #ffc107;
+    font-size: 20px;
+}
+
+.report-options {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.date-range {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+    background: var(--gray-50);
+    border-radius: 10px;
+}
+
+.format-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.format-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: var(--gray-100);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.format-option:hover {
+    background: var(--gray-200);
+}
+
+.format-option input[type="radio"] {
+    margin: 0;
+}
+
+.user-list, .product-list {
+    margin-bottom: 25px;
+}
+
+.users-table, .products-table {
+    background: var(--gray-50);
+    border-radius: 10px;
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.user-row, .product-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 15px;
+    padding: 12px;
+    border-bottom: 1px solid var(--gray-200);
+    align-items: center;
+}
+
+.user-row:last-child, .product-row:last-child {
+    border-bottom: none;
+}
+
+.user-row-header, .product-row-header {
+    font-weight: 600;
+    color: var(--gray-800);
+    background: var(--gray-200);
+    border-radius: 6px;
+}
+
+.add-user-form {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+    border-top: 2px solid var(--gray-100);
+}
+
+.btn-confirm {
+    background: linear-gradient(135deg, var(--pepsi-blue), var(--pepsi-light-blue));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 /* ===== MODAL STYLES ===== */
 .modal {
     position: fixed;
@@ -1315,6 +1498,24 @@ h1 {
         flex-direction: column;
         gap: 10px;
     }
+    
+    .sale-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .date-range {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-form {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .user-row, .product-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1337,6 +1538,10 @@ h1 {
     
     .code-info {
         text-align: center;
+    }
+    
+    .form-header, .form-body, .form-footer {
+        padding: 20px;
     }
 }
 

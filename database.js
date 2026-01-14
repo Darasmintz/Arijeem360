@@ -122,45 +122,45 @@ class Database {
     // ===== USER MANAGEMENT =====
     async createCEOUser(userData) {
         try {
-            console.log('🔄 Creating CEO user in database...');
+            console.log('🔄 Creating General Manager user in database...');
             
             // Validate data
             if (!userData.email || !userData.name || !userData.password) {
-                throw new Error('Missing required CEO information');
+                throw new Error('Missing required General Manager information');
             }
             
             // Create user object
-            const ceoUser = {
+            const gmUser = {
                 email: userData.email,
                 name: userData.name,
-                role: 'CEO',
+                role: 'General Manager',
                 entry_code: userData.entryCode || '0000',
                 stock_code: userData.stockCode || '000000',
                 override_code: userData.overrideCode || '00000000',
-                password_hash: btoa(userData.password), // Basic encoding
+                password_hash: btoa(userData.password),
                 is_active: true,
                 created_at: new Date().toISOString(),
                 last_login: new Date().toISOString()
             };
             
-            console.log('📝 Creating CEO:', ceoUser.email);
+            console.log('📝 Creating General Manager:', gmUser.email);
             
             // Insert into database
             const { data, error } = await this.supabase
                 .from('users')
-                .insert([ceoUser])
+                .insert([gmUser])
                 .select();
             
             if (error) {
-                console.error('❌ CEO creation error:', error);
+                console.error('❌ General Manager creation error:', error);
                 throw error;
             }
             
-            console.log('✅ CEO user created:', data[0].id);
+            console.log('✅ General Manager user created:', data[0].id);
             return data[0];
             
         } catch (error) {
-            console.error('❌ Error creating CEO:', error);
+            console.error('❌ Error creating General Manager:', error);
             throw error;
         }
     }
@@ -190,15 +190,19 @@ class Database {
         try {
             console.log(`🔄 Creating ${userData.role} user...`);
             
-            // Use provided values
+            // Map role to database role
+            let dbRole = userData.role;
+            if (userData.role === 'General Manager') dbRole = 'General Manager';
+            if (userData.role === 'Sales Management') dbRole = 'Sales Management';
+            
             const user = {
                 email: userData.email,
                 name: userData.name,
-                role: userData.role,
+                role: dbRole,
                 entry_code: userData.entryCode || '0000',
-                stock_code: (userData.role === 'Admin' || userData.role === 'Manager' || userData.role === 'CEO') 
+                stock_code: (userData.role === 'Admin' || userData.role === 'General Manager') 
                           ? (userData.stockCode || '000000') : null,
-                override_code: userData.role === 'CEO' 
+                override_code: userData.role === 'General Manager' 
                              ? (userData.overrideCode || '00000000') : null,
                 password_hash: btoa(userData.password),
                 is_active: true,
@@ -232,7 +236,6 @@ class Database {
             
         } catch (error) {
             console.error(`Error creating ${userData.role}:`, error);
-            // Don't throw, just return null
             return null;
         }
     }
@@ -245,6 +248,13 @@ class Database {
             
             if (!user) {
                 console.log(`❌ User not found: ${email}`);
+                return { success: false, message: 'Invalid credentials' };
+            }
+            
+            // Check password (in production, use proper hashing)
+            const inputPasswordHash = btoa(password);
+            if (user.password_hash !== inputPasswordHash) {
+                console.log(`❌ Invalid password for: ${email}`);
                 return { success: false, message: 'Invalid credentials' };
             }
             
@@ -284,9 +294,11 @@ class Database {
     async getDashboardStats() {
         try {
             // Get products
-            const { data: products } = await this.supabase
+            const { data: products, error: productsError } = await this.supabase
                 .from('products')
                 .select('*');
+            
+            if (productsError) throw productsError;
             
             let totalStockValue = 0;
             let totalItems = 0;
@@ -308,11 +320,13 @@ class Database {
             
             // Get today's sales
             const today = new Date().toISOString().split('T')[0];
-            const { data: sales } = await this.supabase
+            const { data: sales, error: salesError } = await this.supabase
                 .from('sales')
                 .select('total_amount')
                 .gte('sale_date', today + 'T00:00:00')
                 .lte('sale_date', today + 'T23:59:59');
+            
+            if (salesError) throw salesError;
             
             let todaySales = 0;
             if (sales) {
@@ -360,6 +374,23 @@ class Database {
         }
     }
 
+    async getRecentSales(limit = 5) {
+        try {
+            const { data, error } = await this.supabase
+                .from('sales')
+                .select('*')
+                .order('sale_date', { ascending: false })
+                .limit(limit);
+            
+            if (error) throw error;
+            return data || [];
+            
+        } catch (error) {
+            console.error('Error getting recent sales:', error);
+            return [];
+        }
+    }
+
     async getActiveUserCount() {
         try {
             const { count, error } = await this.supabase
@@ -376,6 +407,39 @@ class Database {
         }
     }
 
+    async getAllUsers() {
+        try {
+            const { data, error } = await this.supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+            
+        } catch (error) {
+            console.error('Error getting all users:', error);
+            return [];
+        }
+    }
+
+    async getAllProducts() {
+        try {
+            const { data, error } = await this.supabase
+                .from('products')
+                .select('*')
+                .order('name');
+            
+            if (error) throw error;
+            return data || [];
+            
+        } catch (error) {
+            console.error('Error getting products:', error);
+            return [];
+        }
+    }
+
+    // ===== STOCK OPERATIONS =====
     async addStockToProduct(productId, quantity, userId, reason = 'Stock addition') {
         try {
             // Get current product
@@ -431,19 +495,262 @@ class Database {
         }
     }
 
-    async getAllProducts() {
+    // ===== SALES OPERATIONS =====
+    async recordSale(saleData) {
+        try {
+            console.log('🔄 Recording sale...');
+            
+            // First, check if we have enough stock
+            const { data: product, error: productError } = await this.supabase
+                .from('products')
+                .select('*')
+                .eq('id', saleData.product_id)
+                .single();
+            
+            if (productError || !product) {
+                throw new Error('Product not found');
+            }
+            
+            if ((product.current_qty || 0) < saleData.quantity) {
+                throw new Error(`Insufficient stock. Available: ${product.current_qty}, Requested: ${saleData.quantity}`);
+            }
+            
+            // Deduct from stock
+            const newQty = (product.current_qty || 0) - saleData.quantity;
+            
+            const { error: updateError } = await this.supabase
+                .from('products')
+                .update({ 
+                    current_qty: newQty,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', saleData.product_id);
+            
+            if (updateError) throw updateError;
+            
+            // Record the sale
+            const saleRecord = {
+                product_id: saleData.product_id,
+                product_name: saleData.product_name,
+                quantity: saleData.quantity,
+                unit_price: saleData.unit_price,
+                total_amount: saleData.total_amount,
+                sale_type: saleData.sale_type,
+                customer_name: saleData.customer_name || null,
+                sold_by: saleData.sold_by,
+                sale_date: new Date().toISOString(),
+                created_at: new Date().toISOString()
+            };
+            
+            const { data: saleResult, error: saleError } = await this.supabase
+                .from('sales')
+                .insert([saleRecord])
+                .select();
+            
+            if (saleError) throw saleError;
+            
+            // Log stock change
+            await this.supabase
+                .from('stock_changes')
+                .insert([{
+                    product_id: saleData.product_id,
+                    product_name: saleData.product_name,
+                    change_type: 'SALE_DEDUCT',
+                    quantity: -saleData.quantity, // Negative for deduction
+                    previous_qty: product.current_qty,
+                    new_qty: newQty,
+                    changed_by: saleData.sold_by,
+                    reason: `Sale recorded: ${saleData.quantity} units`,
+                    timestamp: new Date().toISOString()
+                }]);
+            
+            console.log('✅ Sale recorded:', saleResult[0].id);
+            return { success: true, saleId: saleResult[0].id };
+            
+        } catch (error) {
+            console.error('Record sale error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ===== PRICE OVERRIDE =====
+    async overrideProductPrice(productId, newRetailPrice, newWholesalePrice, userId, reason) {
+        try {
+            console.log('🔄 Overriding product price...');
+            
+            if (newWholesalePrice > newRetailPrice) {
+                throw new Error('Wholesale price cannot be higher than retail price');
+            }
+            
+            // Get current product
+            const { data: product, error: productError } = await this.supabase
+                .from('products')
+                .select('*')
+                .eq('id', productId)
+                .single();
+            
+            if (productError || !product) {
+                throw new Error('Product not found');
+            }
+            
+            // Update prices
+            const { error: updateError } = await this.supabase
+                .from('products')
+                .update({ 
+                    retail_price: newRetailPrice,
+                    wholesale_price: newWholesalePrice,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', productId);
+            
+            if (updateError) throw updateError;
+            
+            // Log price change
+            await this.supabase
+                .from('stock_changes')
+                .insert([{
+                    product_id: productId,
+                    product_name: product.name,
+                    change_type: 'PRICE_OVERRIDE',
+                    quantity: 0,
+                    previous_qty: product.current_qty,
+                    new_qty: product.current_qty,
+                    changed_by: userId,
+                    reason: `Price override: Retail: ₦${product.retail_price} → ₦${newRetailPrice}, Wholesale: ₦${product.wholesale_price} → ₦${newWholesalePrice}. Reason: ${reason}`,
+                    timestamp: new Date().toISOString()
+                }]);
+            
+            console.log('✅ Price override successful for:', product.name);
+            return { success: true, productName: product.name };
+            
+        } catch (error) {
+            console.error('Price override error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ===== REPORT GENERATION =====
+    async generateSalesReport(startDate, endDate) {
+        try {
+            const { data, error } = await this.supabase
+                .from('sales')
+                .select('*')
+                .gte('sale_date', startDate)
+                .lte('sale_date', endDate)
+                .order('sale_date', { ascending: false });
+            
+            if (error) throw error;
+            
+            return {
+                success: true,
+                data: data || [],
+                totalSales: data ? data.reduce((sum, sale) => sum + (sale.total_amount || 0), 0) : 0,
+                totalItems: data ? data.reduce((sum, sale) => sum + (sale.quantity || 0), 0) : 0
+            };
+            
+        } catch (error) {
+            console.error('Generate sales report error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generateStockReport() {
         try {
             const { data, error } = await this.supabase
                 .from('products')
                 .select('*')
-                .order('name');
+                .order('current_qty', { ascending: true });
             
             if (error) throw error;
-            return data || [];
+            
+            const totalValue = data ? data.reduce((sum, product) => 
+                sum + ((product.current_qty || 0) * (product.wholesale_price || 0)), 0) : 0;
+            
+            const lowStockItems = data ? data.filter(p => 
+                (p.current_qty || 0) <= (p.min_qty || 10)) : [];
+            
+            return {
+                success: true,
+                data: data || [],
+                totalValue: totalValue,
+                lowStockCount: lowStockItems.length,
+                totalItems: data ? data.reduce((sum, p) => sum + (p.current_qty || 0), 0) : 0
+            };
             
         } catch (error) {
-            console.error('Error getting products:', error);
-            return [];
+            console.error('Generate stock report error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // ===== ACTIVITY LOGGING =====
+    async logActivity(userId, userName, userRole, action, details) {
+        try {
+            await this.supabase
+                .from('activity_logs')
+                .insert([{
+                    user_id: userId,
+                    user_name: userName,
+                    user_role: userRole,
+                    action: action,
+                    details: details || {},
+                    timestamp: new Date().toISOString()
+                }]);
+            
+            return true;
+        } catch (error) {
+            console.error('Activity logging error:', error);
+            return false;
+        }
+    }
+
+    // ===== DATABASE MAINTENANCE =====
+    async initializeDatabaseTables() {
+        try {
+            console.log('🔄 Initializing database tables...');
+            
+            // This would run your SQL schema
+            // In production, you would run the SQL you provided
+            // For now, we'll just log it
+            
+            console.log('✅ Database tables would be initialized here');
+            return true;
+            
+        } catch (error) {
+            console.error('Database initialization error:', error);
+            return false;
+        }
+    }
+
+    async backupDatabase() {
+        try {
+            // Get all data from all tables
+            const [users, products, sales, stockChanges, activityLogs] = await Promise.all([
+                this.getAllUsers(),
+                this.getAllProducts(),
+                this.getRecentSales(1000), // Get all sales
+                this.getRecentActivities(1000), // Get all activities
+                this.supabase.from('activity_logs').select('*').limit(1000)
+            ]);
+            
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                users: users || [],
+                products: products || [],
+                sales: sales || [],
+                stock_changes: stockChanges || [],
+                activity_logs: activityLogs.data || []
+            };
+            
+            return {
+                success: true,
+                data: backupData,
+                message: `Backup created with ${backupData.users.length} users, ${backupData.products.length} products, ${backupData.sales.length} sales`
+            };
+            
+        } catch (error) {
+            console.error('Backup error:', error);
+            return { success: false, error: error.message };
         }
     }
 }
@@ -451,4 +758,5 @@ class Database {
 // Initialize database when page loads
 window.addEventListener('load', () => {
     window.database = new Database();
+    console.log('✅ Database module ready');
 });

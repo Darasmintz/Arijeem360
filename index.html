@@ -52,34 +52,34 @@
 
             <!-- Setup Wizard -->
             <div class="setup-wizard">
-                <!-- Step 1: CEO Account -->
+                <!-- Step 1: General Manager Account -->
                 <div id="step1" class="setup-step active">
                     <div class="step-header">
                         <span class="step-number">1</span>
-                        <h3>Create CEO Account</h3>
+                        <h3>Create General Manager Account</h3>
                     </div>
                     
                     <div class="step-content">
                         <div class="setup-info">
                             <i class="fas fa-info-circle"></i>
-                            <p>This account will be created in the database with full system access.</p>
+                            <p>This account will have full system control with all access codes.</p>
                         </div>
                         
                         <div class="input-group">
-                            <label><i class="fas fa-user-tie"></i> CEO Full Name</label>
-                            <input type="text" id="ceoName" placeholder="Chief Executive Officer" class="form-control" required>
+                            <label><i class="fas fa-user-tie"></i> General Manager Full Name</label>
+                            <input type="text" id="gmName" placeholder="General Manager" class="form-control" required>
                         </div>
                         
                         <div class="input-group">
-                            <label><i class="fas fa-envelope"></i> CEO Email</label>
-                            <input type="email" id="ceoEmail" placeholder="ceo@arijeem.pepsi.com" class="form-control" required>
+                            <label><i class="fas fa-envelope"></i> General Manager Email</label>
+                            <input type="email" id="gmEmail" placeholder="gm@arijeem.pepsi.com" class="form-control" required>
                         </div>
                         
                         <div class="input-group">
-                            <label><i class="fas fa-lock"></i> CEO Password</label>
+                            <label><i class="fas fa-lock"></i> General Manager Password</label>
                             <div class="password-wrapper">
-                                <input type="password" id="ceoPassword" placeholder="Create strong password" class="form-control" required minlength="8">
-                                <button type="button" class="toggle-password" onclick="togglePassword('ceoPassword')">
+                                <input type="password" id="gmPassword" placeholder="Create strong password" class="form-control" required minlength="8">
+                                <button type="button" class="toggle-password" onclick="togglePassword('gmPassword')">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -88,7 +88,7 @@
                         
                         <div class="input-group">
                             <label><i class="fas fa-lock"></i> Confirm Password</label>
-                            <input type="password" id="ceoConfirmPassword" placeholder="Re-enter password" class="form-control" required>
+                            <input type="password" id="gmConfirmPassword" placeholder="Re-enter password" class="form-control" required>
                         </div>
                     </div>
                     
@@ -109,7 +109,7 @@
                     <div class="step-content">
                         <div class="setup-info">
                             <i class="fas fa-shield-alt"></i>
-                            <p>Security codes are required for multi-layer authentication.</p>
+                            <p>Security codes for multi-layer authentication.</p>
                         </div>
                         
                         <div class="security-codes">
@@ -131,7 +131,7 @@
                                 </div>
                                 <div class="code-info">
                                     <h4>Stock Code</h4>
-                                    <p>Admin/Manager stock operations</p>
+                                    <p>Admin/General Manager stock operations</p>
                                     <input type="text" id="stockCode" placeholder="6 digits" maxlength="6" class="code-input" oninput="validateNumeric(this)" required>
                                     <small class="code-hint">For inventory management</small>
                                 </div>
@@ -143,9 +143,9 @@
                                 </div>
                                 <div class="code-info">
                                     <h4>Override Code</h4>
-                                    <p>CEO emergency access</p>
+                                    <p>General Manager emergency access</p>
                                     <input type="text" id="overrideCode" placeholder="8 digits" maxlength="8" class="code-input" oninput="validateNumeric(this)" required>
-                                    <small class="code-hint">CEO privilege only</small>
+                                    <small class="code-hint">General Manager privilege only</small>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +171,7 @@
                     <div class="step-content">
                         <div class="setup-info">
                             <i class="fas fa-users"></i>
-                            <p>Create team accounts with role-based permissions. <strong>Set passwords for each account.</strong></p>
+                            <p>Create team accounts with role-based permissions.</p>
                         </div>
                         
                         <div class="team-grid">
@@ -180,7 +180,7 @@
                                 <div class="team-header admin">
                                     <i class="fas fa-user-tie"></i>
                                     <h4>Admin</h4>
-                                    <span class="team-badge">Full Access</span>
+                                    <span class="team-badge">Stock Access</span>
                                 </div>
                                 <div class="team-body">
                                     <input type="email" id="adminEmail" placeholder="admin@arijeem.pepsi.com" class="team-input" value="admin@arijeem.pepsi.com" required>
@@ -197,66 +197,22 @@
                                 </div>
                             </div>
                             
-                            <!-- Manager -->
-                            <div class="team-card">
-                                <div class="team-header manager">
-                                    <i class="fas fa-clipboard-check"></i>
-                                    <h4>Manager</h4>
-                                    <span class="team-badge">Stock Access</span>
-                                </div>
-                                <div class="team-body">
-                                    <input type="email" id="managerEmail" placeholder="manager@arijeem.pepsi.com" class="team-input" value="manager@arijeem.pepsi.com" required>
-                                    <div class="password-wrapper">
-                                        <input type="password" id="managerPassword" placeholder="Manager Password" class="team-input" value="Manager@123" required minlength="6">
-                                        <button type="button" class="toggle-password" onclick="togglePassword('managerPassword')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <input type="text" id="managerName" placeholder="Manager Name" class="team-input" value="Store Manager" required>
-                                </div>
-                                <div class="team-footer">
-                                    <small><i class="fas fa-database"></i> Database table: users</small>
-                                </div>
-                            </div>
-                            
-                            <!-- Staff -->
+                            <!-- Sales Management -->
                             <div class="team-card">
                                 <div class="team-header staff">
-                                    <i class="fas fa-user"></i>
-                                    <h4>Staff</h4>
-                                    <span class="team-badge">Basic Access</span>
+                                    <i class="fas fa-chart-line"></i>
+                                    <h4>Sales Management</h4>
+                                    <span class="team-badge">Entry Access</span>
                                 </div>
                                 <div class="team-body">
-                                    <input type="email" id="staffEmail" placeholder="staff@arijeem.pepsi.com" class="team-input" value="staff@arijeem.pepsi.com" required>
+                                    <input type="email" id="salesEmail" placeholder="sales@arijeem.pepsi.com" class="team-input" value="sales@arijeem.pepsi.com" required>
                                     <div class="password-wrapper">
-                                        <input type="password" id="staffPassword" placeholder="Staff Password" class="team-input" value="Staff@123" required minlength="6">
-                                        <button type="button" class="toggle-password" onclick="togglePassword('staffPassword')">
+                                        <input type="password" id="salesPassword" placeholder="Sales Password" class="team-input" value="Sales@123" required minlength="6">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('salesPassword')">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
-                                    <input type="text" id="staffName" placeholder="Staff Name" class="team-input" value="Sales Staff" required>
-                                </div>
-                                <div class="team-footer">
-                                    <small><i class="fas fa-database"></i> Database table: users</small>
-                                </div>
-                            </div>
-                            
-                            <!-- Customer -->
-                            <div class="team-card">
-                                <div class="team-header customer">
-                                    <i class="fas fa-headset"></i>
-                                    <h4>Customer</h4>
-                                    <span class="team-badge">External Access</span>
-                                </div>
-                                <div class="team-body">
-                                    <input type="email" id="customerEmail" placeholder="customer@pepsi.com" class="team-input" value="customer@pepsi.com" required>
-                                    <div class="password-wrapper">
-                                        <input type="password" id="customerPassword" placeholder="Customer Password" class="team-input" value="Customer@123" required minlength="6">
-                                        <button type="button" class="toggle-password" onclick="togglePassword('customerPassword')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <input type="text" id="customerName" placeholder="Customer Name" class="team-input" value="Valued Customer" required>
+                                    <input type="text" id="salesName" placeholder="Sales Manager Name" class="team-input" value="Sales Manager" required>
                                 </div>
                                 <div class="team-footer">
                                     <small><i class="fas fa-database"></i> Database table: users</small>
@@ -284,7 +240,7 @@
             <div class="setup-footer">
                 <p><i class="fas fa-database"></i> Connected to: <strong>twnbpdqssvzuvdlfzdum.supabase.co</strong></p>
                 <p>© 2024 Arijeem Multipurpose Enterprises | Under Pepsi Corporation</p>
-                <p class="setup-version">v1.0.0 | Real Database System</p>
+                <p class="setup-version">v2.0.0 | Real Database System</p>
             </div>
         </div>
 
@@ -308,9 +264,9 @@
                     <h3><i class="fas fa-user-shield"></i> Select Access Level</h3>
                     <p class="role-subtitle">Authentication via database records</p>
                     <div class="role-grid">
-                        <button class="role-btn ceo" onclick="selectRole('CEO')">
+                        <button class="role-btn general-manager" onclick="selectRole('General Manager')">
                             <i class="fas fa-crown"></i>
-                            <span>CEO</span>
+                            <span>General Manager</span>
                             <small>Full Database Access</small>
                         </button>
                         <button class="role-btn admin" onclick="selectRole('Admin')">
@@ -318,20 +274,10 @@
                             <span>Admin</span>
                             <small>Database Management</small>
                         </button>
-                        <button class="role-btn manager" onclick="selectRole('Manager')">
-                            <i class="fas fa-clipboard-check"></i>
-                            <span>Manager</span>
-                            <small>Stock Database Access</small>
-                        </button>
-                        <button class="role-btn staff" onclick="selectRole('Staff')">
-                            <i class="fas fa-user"></i>
-                            <span>Staff</span>
-                            <small>Database Read Access</small>
-                        </button>
-                        <button class="role-btn customer" onclick="selectRole('Customer')">
-                            <i class="fas fa-headset"></i>
-                            <span>Customer</span>
-                            <small>External Database Access</small>
+                        <button class="role-btn sales-management" onclick="selectRole('Sales Management')">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Sales Management</span>
+                            <small>Sales Database Access</small>
                         </button>
                     </div>
                 </div>
@@ -369,7 +315,7 @@
                         <div class="input-group stock-code-input" style="display: none;">
                             <label class="security-label">
                                 <i class="fas fa-boxes"></i> Stock Code
-                                <span class="security-level">Admin/Manager</span>
+                                <span class="security-level">Admin/General Manager</span>
                             </label>
                             <input type="password" id="loginStockCode" placeholder="XXXXXX" maxlength="6" class="security-input" oninput="validateNumeric(this)" required>
                             <small class="field-hint">From users.stock_code column</small>
@@ -378,7 +324,7 @@
                         <div class="input-group override-code-input" style="display: none;">
                             <label class="security-label">
                                 <i class="fas fa-user-crown"></i> Override Code
-                                <span class="security-level red-text">CEO Only</span>
+                                <span class="security-level red-text">General Manager Only</span>
                             </label>
                             <input type="password" id="loginOverrideCode" placeholder="XXXXXXXX" maxlength="8" class="security-input" oninput="validateNumeric(this)" required>
                             <small class="field-hint">From users.override_code column</small>
@@ -401,30 +347,30 @@
             <div class="login-footer">
                 <p><i class="fas fa-server"></i> Database: Supabase • Tables: 5 • Products: 24</p>
                 <p>© 2024 Arijeem Multipurpose Enterprises | Under Pepsi Corporation</p>
-                <p class="login-version">v1.0.0 | Real Database Authentication</p>
+                <p class="login-version">v2.0.0 | Real Database Authentication</p>
             </div>
         </div>
 
-        <!-- ===== CEO DASHBOARD ===== -->
-        <div id="ceoDashboard" class="dashboard-container" style="display: none;">
+        <!-- ===== GENERAL MANAGER DASHBOARD ===== -->
+        <div id="generalManagerDashboard" class="dashboard-container" style="display: none;">
             <div class="dashboard-header">
                 <div class="header-left">
                     <button class="btn-back" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                     <div class="user-info">
-                        <div class="avatar ceo-avatar">
+                        <div class="avatar gm-avatar">
                             <i class="fas fa-crown"></i>
                         </div>
                         <div>
-                            <h2 id="ceoUserName">CEO Dashboard</h2>
-                            <p class="user-email" id="ceoUserEmail">ceo@arijeem.pepsi.com</p>
-                            <p class="user-db-id" id="ceoUserId"><i class="fas fa-id-card"></i> Database ID: <span id="userIdText">Loading...</span></p>
+                            <h2 id="gmUserName">General Manager Dashboard</h2>
+                            <p class="user-email" id="gmUserEmail">gm@arijeem.pepsi.com</p>
+                            <p class="user-db-id" id="gmUserId"><i class="fas fa-id-card"></i> Database ID: <span id="userIdText">Loading...</span></p>
                         </div>
                     </div>
                 </div>
                 <div class="header-center">
-                    <h1><span class="blue-text">CEO</span> <span class="red-text">Dashboard</span></h1>
+                    <h1><span class="blue-text">General Manager</span> <span class="red-text">Dashboard</span></h1>
                     <div class="live-status">
                         <span class="status-dot active"></span>
                         <span>Live Database Connection</span>
@@ -451,7 +397,7 @@
             </div>
 
             <!-- Quick Stats -->
-            <div class="quick-stats" id="ceoQuickStats">
+            <div class="quick-stats" id="gmQuickStats">
                 <!-- Loaded from database -->
             </div>
 
@@ -484,7 +430,7 @@
                                 View All
                             </button>
                         </div>
-                        <div class="activity-list" id="ceoActivityList">
+                        <div class="activity-list" id="gmActivityList">
                             <!-- Loaded from database -->
                         </div>
                         <div class="activity-footer">
@@ -500,35 +446,35 @@
                             <h3><i class="fas fa-bolt"></i> Database Actions</h3>
                         </div>
                         <div class="action-grid">
-                            <button class="btn-action" onclick="addStockModal()">
+                            <button class="btn-action" onclick="showAddStockForm()">
                                 <i class="fas fa-plus-circle"></i>
                                 <span>Add Stock</span>
                                 <small>Update products table</small>
                             </button>
-                            <button class="btn-action" onclick="generateReport()">
+                            <button class="btn-action" onclick="showRecordSaleForm()">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Record Sale</span>
+                                <small>Add to sales table</small>
+                            </button>
+                            <button class="btn-action" onclick="showGenerateReport()">
                                 <i class="fas fa-file-export"></i>
-                                <span>Database Report</span>
+                                <span>Generate Report</span>
                                 <small>Export all tables</small>
                             </button>
-                            <button class="btn-action" onclick="manageUsers()">
+                            <button class="btn-action" onclick="showUserManagement()">
                                 <i class="fas fa-users-cog"></i>
                                 <span>User Management</span>
                                 <small>Update users table</small>
                             </button>
-                            <button class="btn-action" onclick="viewProducts()">
-                                <i class="fas fa-box-open"></i>
-                                <span>View Products</span>
-                                <small>Browse all products</small>
-                            </button>
-                            <button class="btn-action" onclick="overrideStock()">
+                            <button class="btn-action" onclick="showOverridePriceForm()">
                                 <i class="fas fa-user-crown"></i>
-                                <span>CEO Override</span>
-                                <small>Emergency actions</small>
+                                <span>Override Price</span>
+                                <small>Emergency price change</small>
                             </button>
-                            <button class="btn-action" onclick="refreshDashboard()">
-                                <i class="fas fa-sync-alt"></i>
-                                <span>Refresh Data</span>
-                                <small>Update from database</small>
+                            <button class="btn-action" onclick="showProductManagement()">
+                                <i class="fas fa-box-open"></i>
+                                <span>Manage Products</span>
+                                <small>Browse all products</small>
                             </button>
                         </div>
                     </div>
@@ -592,13 +538,538 @@
                 </div>
                 <div class="footer-right">
                     <button class="btn-footer" onclick="printReport()">
-                        <i class="fas fa-print"></i> Print
+                        <i class="fas fa-print"></i> Print Dashboard
                     </button>
-                    <button class="btn-footer" onclick="exportData()">
-                        <i class="fas fa-download"></i> Export
+                    <button class="btn-footer" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                     <button class="btn-footer" onclick="showDatabaseInfo()">
                         <i class="fas fa-info-circle"></i> DB Info
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ADMIN DASHBOARD ===== -->
+        <div id="adminDashboard" class="dashboard-container" style="display: none;">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <button class="btn-back" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                    <div class="user-info">
+                        <div class="avatar admin-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <h2 id="adminUserName">Admin Dashboard</h2>
+                            <p class="user-email" id="adminUserEmail">admin@arijeem.pepsi.com</p>
+                            <p class="user-db-id" id="adminUserId"><i class="fas fa-id-card"></i> Database ID: <span id="adminIdText">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <h1><span class="blue-text">Admin</span> <span class="red-text">Dashboard</span></h1>
+                    <div class="live-status">
+                        <span class="status-dot active"></span>
+                        <span>Live Database Connection</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="time-display">
+                        <i class="fas fa-clock"></i>
+                        <span id="adminCurrentTime">00:00:00</span>
+                    </div>
+                    <div class="db-stats">
+                        <i class="fas fa-chart-bar"></i>
+                        <span id="adminLiveStats">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Quick Stats -->
+            <div class="quick-stats" id="adminQuickStats">
+                <!-- Loaded from database -->
+            </div>
+
+            <!-- Admin Dashboard Content -->
+            <div class="dashboard-content">
+                <div class="dashboard-left">
+                    <!-- Sales Chart -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Sales Overview</h3>
+                            <div class="card-subtitle">Real-time data from database</div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="adminSalesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-history"></i> Recent Stock Changes</h3>
+                        </div>
+                        <div class="activity-list" id="adminActivityList">
+                            <!-- Loaded from database -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-right">
+                    <!-- Admin Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bolt"></i> Admin Actions</h3>
+                        </div>
+                        <div class="action-grid">
+                            <button class="btn-action" onclick="showAddStockForm()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Stock</span>
+                                <small>Update products table</small>
+                            </button>
+                            <button class="btn-action" onclick="showRecordSaleForm()">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Record Sale</span>
+                                <small>Add to sales table</small>
+                            </button>
+                            <button class="btn-action" onclick="showProductManagement()">
+                                <i class="fas fa-box-open"></i>
+                                <span>View Products</span>
+                                <small>Browse all products</small>
+                            </button>
+                            <button class="btn-action" onclick="refreshAdminDashboard()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Refresh Data</span>
+                                <small>Update from database</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock -->
+                    <div class="dashboard-card alert-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-exclamation-circle red-text"></i> Low Stock Alert</h3>
+                        </div>
+                        <div class="stock-list" id="adminLowStockList">
+                            <!-- Loaded from database -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Dashboard Footer -->
+            <div class="dashboard-footer">
+                <div class="footer-left">
+                    <span><i class="fas fa-database"></i> Database: <strong>Supabase</strong></span>
+                    <span><i class="fas fa-user-tie"></i> Role: <strong>Admin</strong></span>
+                    <span><i class="fas fa-clock"></i> Session: <span id="adminSessionTimer">30:00</span></span>
+                </div>
+                <div class="footer-right">
+                    <button class="btn-footer" onclick="refreshAdminDashboard()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SALES MANAGEMENT DASHBOARD ===== -->
+        <div id="salesDashboard" class="dashboard-container" style="display: none;">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <button class="btn-back" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                    <div class="user-info">
+                        <div class="avatar sales-avatar">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h2 id="salesUserName">Sales Management Dashboard</h2>
+                            <p class="user-email" id="salesUserEmail">sales@arijeem.pepsi.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <h1><span class="blue-text">Sales Management</span> <span class="red-text">Dashboard</span></h1>
+                </div>
+                <div class="header-right">
+                    <div class="time-display">
+                        <i class="fas fa-clock"></i>
+                        <span id="salesCurrentTime">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Quick Stats -->
+            <div class="quick-stats" id="salesQuickStats">
+                <!-- Loaded from database -->
+            </div>
+
+            <!-- Sales Dashboard Content -->
+            <div class="dashboard-content">
+                <div class="dashboard-left">
+                    <!-- Sales Chart -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Sales Performance</h3>
+                            <div class="card-subtitle">Today's sales data</div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="salesManagementChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sales -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-history"></i> Recent Sales</h3>
+                        </div>
+                        <div class="activity-list" id="salesActivityList">
+                            <!-- Loaded from database -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-right">
+                    <!-- Sales Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bolt"></i> Sales Actions</h3>
+                        </div>
+                        <div class="action-grid">
+                            <button class="btn-action" onclick="showRecordSaleForm()">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Record New Sale</span>
+                                <small>Add to sales table</small>
+                            </button>
+                            <button class="btn-action" onclick="viewSalesReport()">
+                                <i class="fas fa-file-alt"></i>
+                                <span>View Sales Report</span>
+                                <small>Daily sales summary</small>
+                            </button>
+                            <button class="btn-action" onclick="viewProductCatalog()">
+                                <i class="fas fa-box-open"></i>
+                                <span>Product Catalog</span>
+                                <small>Browse products</small>
+                            </button>
+                            <button class="btn-action" onclick="refreshSalesDashboard()">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Refresh Data</span>
+                                <small>Update from database</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-star"></i> Top Selling Products</h3>
+                        </div>
+                        <div class="stock-list" id="topProductsList">
+                            <!-- Loaded from database -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Dashboard Footer -->
+            <div class="dashboard-footer">
+                <div class="footer-left">
+                    <span><i class="fas fa-database"></i> Database: <strong>Supabase</strong></span>
+                    <span><i class="fas fa-chart-line"></i> Role: <strong>Sales Management</strong></span>
+                    <span><i class="fas fa-clock"></i> Session: <span id="salesSessionTimer">30:00</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ACTION FORMS (ON-PAGE, NOT POPUPS) ===== -->
+        
+        <!-- Add Stock Form -->
+        <div id="addStockForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-plus-circle"></i> Add Stock to Product</h3>
+                    <button class="btn-close-form" onclick="closeForm('addStockForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="input-group">
+                        <label><i class="fas fa-box"></i> Select Product</label>
+                        <select id="addStockProduct" class="form-control" required>
+                            <option value="">Loading products...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-hashtag"></i> Quantity to Add</label>
+                        <input type="number" id="addStockQuantity" class="form-control" placeholder="Enter quantity" min="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-sticky-note"></i> Reason (Optional)</label>
+                        <textarea id="addStockReason" class="form-control" placeholder="E.g., New shipment, Returned goods, etc." rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('addStockForm')">
+                        Cancel
+                    </button>
+                    <button class="btn-confirm" onclick="submitAddStock()">
+                        <i class="fas fa-check"></i> Confirm Add Stock
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Record Sale Form -->
+        <div id="recordSaleForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Record New Sale</h3>
+                    <button class="btn-close-form" onclick="closeForm('recordSaleForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="sale-form-grid">
+                        <div class="input-group">
+                            <label><i class="fas fa-box"></i> Product</label>
+                            <select id="saleProduct" class="form-control" required onchange="updateSalePrice()">
+                                <option value="">Select product...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-hashtag"></i> Quantity</label>
+                            <input type="number" id="saleQuantity" class="form-control" placeholder="Qty" min="1" value="1" oninput="updateSaleTotal()" required>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> Sale Type</label>
+                            <select id="saleType" class="form-control" required onchange="updateSalePrice()">
+                                <option value="RETAIL">Retail</option>
+                                <option value="WHOLESALE">Wholesale</option>
+                                <option value="RETAIL_CAN">Retail (Can)</option>
+                                <option value="WHOLESALE_CAN">Wholesale (Can)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-money-bill"></i> Unit Price (₦)</label>
+                            <input type="number" id="saleUnitPrice" class="form-control" placeholder="Price per unit" step="0.01" required>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-calculator"></i> Total Amount (₦)</label>
+                            <input type="number" id="saleTotalAmount" class="form-control" readonly>
+                        </div>
+                        <div class="input-group full-width">
+                            <label><i class="fas fa-user"></i> Customer Name (Optional)</label>
+                            <input type="text" id="saleCustomer" class="form-control" placeholder="Customer name">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('recordSaleForm')">
+                        Cancel
+                    </button>
+                    <button class="btn-confirm" onclick="submitSale()">
+                        <i class="fas fa-check"></i> Confirm Sale
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Override Price Form -->
+        <div id="overridePriceForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-user-crown red-text"></i> Override Price (General Manager Only)</h3>
+                    <button class="btn-close-form" onclick="closeForm('overridePriceForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="security-warning">
+                        <i class="fas fa-shield-alt"></i>
+                        <p><strong>Security Check Required:</strong> Please enter your Override Code to continue.</p>
+                        <input type="password" id="overrideSecurityCode" class="security-input" placeholder="Enter 8-digit override code" maxlength="8" oninput="validateNumeric(this)">
+                    </div>
+                    <div class="override-form-grid">
+                        <div class="input-group">
+                            <label><i class="fas fa-box"></i> Select Product</label>
+                            <select id="overrideProduct" class="form-control" required>
+                                <option value="">Loading products...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> New Retail Price (₦)</label>
+                            <input type="number" id="overrideRetailPrice" class="form-control" placeholder="Enter new retail price" step="0.01" min="0" required>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-tag"></i> New Wholesale Price (₦)</label>
+                            <input type="number" id="overrideWholesalePrice" class="form-control" placeholder="Enter new wholesale price" step="0.01" min="0" required>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-sticky-note"></i> Reason for Override</label>
+                            <textarea id="overrideReason" class="form-control" placeholder="Explain why this price change is necessary" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('overridePriceForm')">
+                        Cancel
+                    </button>
+                    <button class="btn-confirm" onclick="submitPriceOverride()">
+                        <i class="fas fa-check"></i> Confirm Price Override
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Report Form -->
+        <div id="generateReportForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-file-export"></i> Generate Database Report</h3>
+                    <button class="btn-close-form" onclick="closeForm('generateReportForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="report-options">
+                        <div class="input-group">
+                            <label><i class="fas fa-calendar"></i> Report Period</label>
+                            <select id="reportPeriod" class="form-control" required>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="this_week">This Week</option>
+                                <option value="last_week">Last Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="date-range" id="customDateRange" style="display: none;">
+                            <div class="input-group">
+                                <label>Start Date</label>
+                                <input type="date" id="reportStartDate" class="form-control">
+                            </div>
+                            <div class="input-group">
+                                <label>End Date</label>
+                                <input type="date" id="reportEndDate" class="form-control">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-file"></i> Report Type</label>
+                            <select id="reportType" class="form-control" required>
+                                <option value="sales">Sales Report</option>
+                                <option value="stock">Stock Report</option>
+                                <option value="products">Products Report</option>
+                                <option value="users">Users Report</option>
+                                <option value="full">Full Database Export</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-download"></i> Export Format</label>
+                            <div class="format-options">
+                                <label class="format-option">
+                                    <input type="radio" name="exportFormat" value="csv" checked>
+                                    <span>CSV (Excel)</span>
+                                </label>
+                                <label class="format-option">
+                                    <input type="radio" name="exportFormat" value="pdf">
+                                    <span>PDF</span>
+                                </label>
+                                <label class="format-option">
+                                    <input type="radio" name="exportFormat" value="print">
+                                    <span>Print</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('generateReportForm')">
+                        Cancel
+                    </button>
+                    <button class="btn-confirm" onclick="generateReportNow()">
+                        <i class="fas fa-download"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Form -->
+        <div id="userManagementForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-users-cog"></i> User Management</h3>
+                    <button class="btn-close-form" onclick="closeForm('userManagementForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="user-list" id="userListContainer">
+                        <h4><i class="fas fa-users"></i> Current Users</h4>
+                        <div class="users-table" id="usersTable">
+                            Loading users...
+                        </div>
+                    </div>
+                    <div class="add-user-form">
+                        <h4><i class="fas fa-user-plus"></i> Add New User</h4>
+                        <div class="input-group">
+                            <label><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" id="newUserName" class="form-control" placeholder="Enter full name">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="newUserEmail" class="form-control" placeholder="user@arijeem.pepsi.com">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-user-tag"></i> Role</label>
+                            <select id="newUserRole" class="form-control">
+                                <option value="Admin">Admin</option>
+                                <option value="Sales Management">Sales Management</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" id="newUserPassword" class="form-control" placeholder="Enter password">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('userManagementForm')">
+                        Cancel
+                    </button>
+                    <button class="btn-confirm" onclick="addNewUser()">
+                        <i class="fas fa-plus"></i> Add User
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Management Form -->
+        <div id="productManagementForm" class="action-form-container" style="display: none;">
+            <div class="action-form">
+                <div class="form-header">
+                    <h3><i class="fas fa-box-open"></i> Product Management</h3>
+                    <button class="btn-close-form" onclick="closeForm('productManagementForm')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="form-body">
+                    <div class="product-list" id="productListContainer">
+                        <h4><i class="fas fa-boxes"></i> All Products</h4>
+                        <div class="products-table" id="productsTable">
+                            Loading products...
+                        </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-back" onclick="closeForm('productManagementForm')">
+                        Close
+                    </button>
+                    <button class="btn-confirm" onclick="refreshProductList()">
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </div>

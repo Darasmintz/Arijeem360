@@ -1,6 +1,6 @@
 // config.js - Arijeem Insight 360 Configuration
 const CONFIG = {
-    // SUPABASE CREDENTIALS
+    // SUPABASE CREDENTIALS (⚠️ WARNING: EXPOSED - REVOKE THIS KEY!)
     SUPABASE_URL: 'https://twnbpdqssvzuvdlfzdum.supabase.co',
     SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3bmJwZHFzc3Z6dXZkbGZ6ZHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyNzQ0NzAsImV4cCI6MjA4Mzg1MDQ3MH0.XfPvPh4YZDES5gktKkj5KHtHmNTZmjye8LfDkBbpX-U',
     
@@ -8,6 +8,13 @@ const CONFIG = {
     SYSTEM_NAME: 'Arijeem Insight 360',
     COMPANY_NAME: 'Arijeem Multipurpose Enterprises',
     PARENT_COMPANY: 'Pepsi Corporation',
+    
+    // ROLE CONFIGURATION
+    ROLES: {
+        GENERAL_MANAGER: 'General Manager',
+        ADMIN: 'Admin', 
+        SALES_MANAGEMENT: 'Sales Management'
+    },
     
     // SECURITY SETTINGS
     MAX_LOGIN_ATTEMPTS: 3,
@@ -20,7 +27,7 @@ const CONFIG = {
         PRODUCTS: 'products',
         SALES: 'sales',
         STOCK_CHANGES: 'stock_changes',
-        NOTIFICATIONS: 'notifications'
+        ACTIVITY_LOGS: 'activity_logs'
     },
     
     // STOCK SETTINGS
@@ -36,7 +43,11 @@ const CONFIG = {
         warning: '#f59e0b',
         error: '#ef4444',
         background: '#f5f7fa'
-    }
+    },
+    
+    // CURRENCY
+    CURRENCY: '₦',
+    CURRENCY_NAME: 'Naira'
 };
 
 // Export to global scope

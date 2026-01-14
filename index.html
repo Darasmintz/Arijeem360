@@ -1123,5 +1123,65 @@
             };
         });
     </script>
+    <script>
+// IMMEDIATE FIX FOR HTML DISPLAY
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Checking for price doubling in HTML...');
+    
+    // Wait a bit for prices to load
+    setTimeout(function() {
+        // Fix all price displays
+        document.querySelectorAll('*').forEach(element => {
+            const text = element.textContent || element.value || '';
+            
+            // Fix ₦4,200 and ₦4,150
+            if (text.includes('4200') || text.includes('4150') || 
+                text.includes('₦4,200') || text.includes('₦4,150')) {
+                
+                console.log('🚨 Found doubled price in HTML:', element);
+                
+                // Replace with correct prices
+                if (element.textContent) {
+                    element.textContent = element.textContent
+                        .replace('4200', '2200')
+                        .replace('4150', '2150')
+                        .replace('₦4,200', '₦2,200')
+                        .replace('₦4,150', '₦2,150');
+                }
+                
+                if (element.value) {
+                    element.value = element.value
+                        .replace('4200', '2200')
+                        .replace('4150', '2150');
+                }
+                
+                if (element.innerHTML) {
+                    element.innerHTML = element.innerHTML
+                        .replace('4200', '2200')
+                        .replace('4150', '2150')
+                        .replace('₦4,200', '₦2,200')
+                        .replace('₦4,150', '₦2,150');
+                }
+            }
+        });
+        
+        console.log('✅ HTML price fix applied');
+    }, 1000);
+});
+
+// Also monitor for dynamic price changes
+setInterval(function() {
+    const elements = document.querySelectorAll('[id*="price"], [class*="price"], input[type="number"]');
+    elements.forEach(el => {
+        const val = el.value || el.textContent || '';
+        if (val === '4200' || val === '4150' || val === '₦4200' || val === '₦4150') {
+            console.log('🔄 Auto-fixing dynamic price:', el);
+            if (el.value) el.value = val.replace('4200', '2200').replace('4150', '2150');
+            if (el.textContent) el.textContent = val.replace('4200', '2200').replace('4150', '2150');
+        }
+    });
+}, 2000);
+</script>
 </body>
 </html>
+

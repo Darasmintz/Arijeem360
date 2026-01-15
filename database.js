@@ -1,41 +1,74 @@
-// database.js - Real Database Operations with PRICE FIX
-console.log('🚀 Loading Database Module with Price Fix...');
+// database.js - CORRECT VERSION - Shows ACTUAL prices from your list
+console.log('🚀 Loading Database Module with Correct Prices...');
 
 class Database {
     constructor() {
         this.supabase = null;
         this.isConnected = false;
-        this.priceCache = {}; // Cache to prevent price doubling
+        this.priceCache = {};
+        this.actualPrices = this.getActualPriceList(); // Your correct prices
         this.initialize();
+    }
+
+    // ===== YOUR ACTUAL PRICE LIST =====
+    getActualPriceList() {
+        return {
+            // Water Category
+            'NIRVANA-1L': { retail: 1400, wholesale: 1300 },
+            'EVA-1.5L': { retail: 3600, wholesale: 3600 },
+            'AQUAFINA-50CL': { retail: 1700, wholesale: 1650 },
+            'AQUAFINA-75CL': { retail: 2200, wholesale: 2150 },
+            
+            // RGB (Glass)
+            'PEPSI-RGB': { retail: 4500, wholesale: 4400 },
+            '7UP-RGB': { retail: 3000, wholesale: 2950 },
+            'SK-RGB': { retail: 3120, wholesale: 3050 },
+            'COKE-RGB-50CL': { retail: 6000, wholesale: 6000 },
+            'COKE-ZERO-RGB': { retail: 3200, wholesale: 3200 },
+            'COKE-RED-RGB': { retail: 4400, wholesale: 4400 },
+            
+            // PET (Plastic)
+            'CF-PET': { retail: 4400, wholesale: 4400 },
+            'RAZZLE-40CL': { retail: 2200, wholesale: 2100 },
+            'RAZZLE-60CL': { retail: 3200, wholesale: 3100 },
+            'BIG-COLA-35CL': { retail: 2100, wholesale: 2100 },
+            'C-FRUITY': { retail: 2150, wholesale: 2150 },
+            'LACASERA-35CL': { retail: 2300, wholesale: 2200 },
+            'AMERICAN-COLA': { retail: 3700, wholesale: 3600 },
+            
+            // Cans
+            'DUBIC-CAN': { retail: 12000, wholesale: 11000, wholesaleThreshold: 30 },
+            
+            // Additional PET
+            'SK-30CL': { retail: 3000, wholesale: 3000 },
+            'SK-50CL': { retail: 4300, wholesale: 4200 },
+            'PET-60CL': { retail: 4250, wholesale: 4150 }, // Pepsi PET
+            'PET-40CL': { retail: 2320, wholesale: 2300 }, // Mirinda PET
+            // 'FANTA-PET': { retail: 2200, wholesale: 2150 }, // If you add this SKU
+        };
     }
 
     async initialize() {
         try {
-            // Wait for config to load
             await this.waitForConfig();
             
             if (!window.CONFIG || !window.supabase) {
                 throw new Error('Required dependencies not loaded');
             }
 
-            // Create Supabase client
             this.supabase = supabase.createClient(
                 CONFIG.SUPABASE_URL, 
                 CONFIG.SUPABASE_KEY,
-                {
-                    auth: { persistSession: false }
-                }
+                { auth: { persistSession: false } }
             );
 
             console.log('✅ Database client created');
             
-            // Test connection
             this.isConnected = await this.testConnection();
             
             if (this.isConnected) {
-                console.log('🎉 Database ready for operations!');
-                // Initialize price cache and fix any doubled prices
-                await this.initializePriceCache();
+                console.log('🎉 Database ready!');
+                await this.ensureCorrectPrices();
             }
 
         } catch (error) {
@@ -44,11 +77,10 @@ class Database {
         }
     }
 
-    // ===== PRICE FIX FUNCTIONS =====
-    
-    async initializePriceCache() {
+    // ===== ENSURE DATABASE HAS CORRECT PRICES =====
+    async ensureCorrectPrices() {
         try {
-            console.log('🔄 Initializing price cache...');
+            console.log('🔄 Ensuring database has correct prices...');
             
             const { data: products, error } = await this.supabase
                 .from('products')
@@ -56,98 +88,101 @@ class Database {
             
             if (error) throw error;
             
-            // Cache all products and check for price issues
+            let updatesNeeded = [];
+            
             products.forEach(product => {
-                this.priceCache[product.id] = {
-                    retail_price: product.retail_price,
-                    wholesale_price: product.wholesale_price,
-                    sku: product.sku,
-                    name: product.name
-                };
+                const correctPrice = this.actualPrices[product.sku];
                 
-                // Check and fix Aquafina 75cl price doubling
-                if ((product.sku === 'AQUAFINA-75CL' || product.name.includes('Aquafina 75cl')) && 
-                    (product.retail_price > 2500 || product.wholesale_price > 2500)) {
+                if (correctPrice) {
+                    // Check if prices are wrong
+                    const retailDiff = Math.abs(product.retail_price - correctPrice.retail);
+                    const wholesaleDiff = Math.abs(product.wholesale_price - correctPrice.wholesale);
                     
-                    console.log('⚠️ Detected doubled price for Aquafina 75cl:', product.retail_price, product.wholesale_price);
-                    this.fixAquafinaPrice(product.id);
+                    if (retailDiff > 10 || wholesaleDiff > 10) {
+                        updatesNeeded.push({
+                            id: product.id,
+                            sku: product.sku,
+                            name: product.name,
+                            current: {
+                                retail: product.retail_price,
+                                wholesale: product.wholesale_price
+                            },
+                            correct: correctPrice
+                        });
+                    }
                 }
             });
             
-            console.log(`✅ Price cache initialized with ${products.length} products`);
-            
-        } catch (error) {
-            console.error('❌ Price cache initialization error:', error);
-        }
-    }
-    
-    async fixAquafinaPrice(productId) {
-        try {
-            console.log('🔧 Fixing Aquafina 75cl price doubling...');
-            
-            const { error } = await this.supabase
-                .from('products')
-                .update({
-                    retail_price: 2200,
-                    wholesale_price: 2150,
-                    last_updated: new Date().toISOString()
-                })
-                .eq('id', productId);
-            
-            if (!error) {
-                console.log('✅ Aquafina 75cl price fixed: ₦2,200 / ₦2,150');
-                
-                // Update cache
-                this.priceCache[productId] = {
-                    ...this.priceCache[productId],
-                    retail_price: 2200,
-                    wholesale_price: 2150
-                };
-                
-                // Log the fix
-                await this.supabase
-                    .from('activity_logs')
-                    .insert([{
-                        user_name: 'System',
-                        user_role: 'Admin',
-                        action: 'PRICE_FIX',
-                        details: {
-                            product_id: productId,
-                            product_name: 'Aquafina 75cl',
-                            old_retail: this.priceCache[productId]?.retail_price || 0,
-                            new_retail: 2200,
-                            old_wholesale: this.priceCache[productId]?.wholesale_price || 0,
-                            new_wholesale: 2150,
-                            reason: 'Fixed price doubling issue'
-                        },
-                        timestamp: new Date().toISOString()
-                    }]);
+            if (updatesNeeded.length > 0) {
+                console.log(`🔧 Need to fix ${updatesNeeded.length} products`);
+                await this.fixProductPrices(updatesNeeded);
+            } else {
+                console.log('✅ All products have correct prices');
             }
             
         } catch (error) {
-            console.error('❌ Price fix error:', error);
+            console.error('❌ Price check error:', error);
         }
     }
     
-    // Get product with price fix applied
-    async getProductWithFixedPrice(productId) {
+    async fixProductPrices(updates) {
+        for (const update of updates) {
+            try {
+                console.log(`  Fixing ${update.name}: ${update.current.retail}→${update.correct.retail}`);
+                
+                const { error } = await this.supabase
+                    .from('products')
+                    .update({
+                        retail_price: update.correct.retail,
+                        wholesale_price: update.correct.wholesale,
+                        last_updated: new Date().toISOString()
+                    })
+                    .eq('id', update.id);
+                
+                if (!error) {
+                    // Update cache
+                    this.priceCache[update.id] = {
+                        retail_price: update.correct.retail,
+                        wholesale_price: update.correct.wholesale,
+                        sku: update.sku,
+                        name: update.name
+                    };
+                    
+                    // Log the correction
+                    await this.supabase
+                        .from('activity_logs')
+                        .insert([{
+                            user_name: 'System',
+                            user_role: 'Admin',
+                            action: 'PRICE_CORRECTION',
+                            details: {
+                                product_id: update.id,
+                                product_name: update.name,
+                                sku: update.sku,
+                                old_retail: update.current.retail,
+                                new_retail: update.correct.retail,
+                                old_wholesale: update.current.wholesale,
+                                new_wholesale: update.correct.wholesale,
+                                reason: 'Corrected to actual price list'
+                            },
+                            timestamp: new Date().toISOString()
+                        }]);
+                }
+                
+            } catch (error) {
+                console.error(`  Error fixing ${update.name}:`, error);
+            }
+        }
+        
+        console.log('✅ Price corrections completed');
+    }
+
+    // ===== GET PRODUCT WITH CORRECT PRICE =====
+    async getProductWithCorrectPrice(productId) {
         try {
             // Check cache first
             if (this.priceCache[productId]) {
-                const cached = this.priceCache[productId];
-                
-                // Apply fix for Aquafina 75cl if needed
-                if ((cached.sku === 'AQUAFINA-75CL' || cached.name.includes('Aquafina 75cl')) && 
-                    cached.retail_price > 2500) {
-                    
-                    return {
-                        ...cached,
-                        retail_price: 2200,
-                        wholesale_price: 2150,
-                        price_fixed: true
-                    };
-                }
-                return cached;
+                return this.priceCache[productId];
             }
             
             // Fetch from database
@@ -159,46 +194,37 @@ class Database {
             
             if (error) throw error;
             
-            // Apply price fix if needed
-            let fixedProduct = { ...product };
+            // Apply correct price from our list
+            const correctPrice = this.actualPrices[product.sku];
+            let correctedProduct = { ...product };
             
-            if ((product.sku === 'AQUAFINA-75CL' || product.name.includes('Aquafina 75cl')) && 
-                product.retail_price > 2500) {
-                
-                fixedProduct = {
+            if (correctPrice) {
+                correctedProduct = {
                     ...product,
-                    retail_price: 2200,
-                    wholesale_price: 2150,
-                    price_fixed: true
-                };
-                
-                // Update cache with fixed price
-                this.priceCache[productId] = {
-                    retail_price: 2200,
-                    wholesale_price: 2150,
-                    sku: product.sku,
-                    name: product.name
-                };
-            } else {
-                // Update cache with original price
-                this.priceCache[productId] = {
-                    retail_price: product.retail_price,
-                    wholesale_price: product.wholesale_price,
-                    sku: product.sku,
-                    name: product.name
+                    retail_price: correctPrice.retail,
+                    wholesale_price: correctPrice.wholesale,
+                    price_source: 'actual_list'
                 };
             }
             
-            return fixedProduct;
+            // Update cache
+            this.priceCache[productId] = {
+                retail_price: correctedProduct.retail_price,
+                wholesale_price: correctedProduct.wholesale_price,
+                sku: correctedProduct.sku,
+                name: correctedProduct.name,
+                current_qty: correctedProduct.current_qty
+            };
+            
+            return correctedProduct;
             
         } catch (error) {
-            console.error('❌ Get product with fixed price error:', error);
+            console.error('❌ Get product error:', error);
             return null;
         }
     }
     
-    // Get all products with price fixes applied
-    async getAllProductsWithFixedPrices() {
+    async getAllProductsWithCorrectPrices() {
         try {
             const { data: products, error } = await this.supabase
                 .from('products')
@@ -207,22 +233,23 @@ class Database {
             
             if (error) throw error;
             
-            // Apply price fixes
-            const fixedProducts = products.map(product => {
-                if ((product.sku === 'AQUAFINA-75CL' || product.name.includes('Aquafina 75cl')) && 
-                    product.retail_price > 2500) {
-                    
+            // Apply correct prices from our list
+            const correctedProducts = products.map(product => {
+                const correctPrice = this.actualPrices[product.sku];
+                
+                if (correctPrice) {
                     return {
                         ...product,
-                        retail_price: 2200,
-                        wholesale_price: 2150,
-                        price_fixed: true
+                        retail_price: correctPrice.retail,
+                        wholesale_price: correctPrice.wholesale,
+                        price_source: 'actual_list'
                     };
                 }
+                
                 return product;
             });
             
-            return fixedProducts;
+            return correctedProducts;
             
         } catch (error) {
             console.error('❌ Get all products error:', error);
@@ -230,6 +257,114 @@ class Database {
         }
     }
 
+    // ===== PROCESS SALE WITH CORRECT PRICES =====
+    async processSale(saleData) {
+        try {
+            console.log('🔄 Processing sale...', saleData);
+            
+            const product = await this.getProductWithCorrectPrice(saleData.product_id);
+            
+            if (!product) {
+                throw new Error('Product not found');
+            }
+            
+            if (product.current_qty < saleData.quantity) {
+                throw new Error(`Insufficient stock! Available: ${product.current_qty}, Requested: ${saleData.quantity}`);
+            }
+            
+            // SPECIAL CASE: Dubic Can (wholesale at 30+ units, not 50)
+            let isWholesale = saleData.quantity >= 50;
+            let unitPrice = product.retail_price;
+            
+            if (product.sku === 'DUBIC-CAN') {
+                // Special wholesale threshold: 30+ units
+                isWholesale = saleData.quantity >= 30;
+                unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
+            } else {
+                // Normal products: 50+ units for wholesale
+                isWholesale = saleData.quantity >= 50;
+                unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
+            }
+            
+            const totalPrice = unitPrice * saleData.quantity;
+            
+            console.log('💰 Price calculation:', {
+                product: product.name,
+                quantity: saleData.quantity,
+                isWholesale,
+                unitPrice,
+                totalPrice,
+                retail_price: product.retail_price,
+                wholesale_price: product.wholesale_price
+            });
+            
+            const { data: sale, error: saleError } = await this.supabase
+                .from('sales')
+                .insert([{
+                    product_id: saleData.product_id,
+                    product_name: product.name,
+                    quantity: saleData.quantity,
+                    unit_price: unitPrice,
+                    total_amount: totalPrice,
+                    total_price: totalPrice,
+                    sale_type: isWholesale ? 'WHOLESALE' : 'RETAIL',
+                    customer_name: saleData.customer_name,
+                    customer_phone: saleData.customer_phone,
+                    customer_type: saleData.customer_type || 'retail',
+                    sold_by: saleData.sold_by,
+                    payment_status: saleData.payment_status || 'paid',
+                    amount_paid: saleData.amount_paid || totalPrice,
+                    amount_owing: saleData.amount_owing || 0
+                }])
+                .select()
+                .single();
+            
+            if (saleError) throw new Error(`Sale failed: ${saleError.message}`);
+            
+            // Update stock
+            const newQty = product.current_qty - saleData.quantity;
+            await this.supabase
+                .from('products')
+                .update({ current_qty: newQty })
+                .eq('id', saleData.product_id);
+            
+            // Log stock change
+            await this.supabase
+                .from('stock_changes')
+                .insert([{
+                    product_id: saleData.product_id,
+                    product_name: product.name,
+                    change_type: 'SALE_DEDUCT',
+                    quantity: saleData.quantity,
+                    previous_qty: product.current_qty,
+                    new_qty: newQty,
+                    changed_by: saleData.sold_by,
+                    reason: `Sale: ${saleData.quantity} units @ ₦${unitPrice}`
+                }]);
+            
+            return {
+                success: true,
+                sale: sale,
+                price_info: {
+                    unit_price: unitPrice,
+                    total_price: totalPrice,
+                    price_type: isWholesale ? 'wholesale' : 'retail',
+                    quantity: saleData.quantity,
+                    product_name: product.name
+                }
+            };
+            
+        } catch (error) {
+            console.error('❌ Process sale error:', error);
+            return {
+                success: false,
+                error: error.message,
+                message: `Sale failed: ${error.message}`
+            };
+        }
+    }
+
+    // ===== REST OF DATABASE METHODS (same as before) =====
     waitForConfig() {
         return new Promise((resolve) => {
             let attempts = 0;
@@ -248,22 +383,19 @@ class Database {
         });
     }
 
-    // ===== CONNECTION & TESTING =====
     async testConnection() {
         try {
             console.log('🔄 Testing database connection...');
             
-            // Try to access a table
             const { data, error } = await this.supabase
                 .from('products')
                 .select('count')
                 .limit(1);
             
             if (error) {
-                // Check if it's a table not found error (first setup)
                 if (error.code === '42P01') {
                     console.log('ℹ️ First time setup - tables not created yet');
-                    return true; // Connection is good, just no tables
+                    return true;
                 }
                 console.error('❌ Connection test error:', error.message);
                 return false;
@@ -282,7 +414,6 @@ class Database {
         try {
             console.log('🔄 Checking if system is set up...');
             
-            // Check if users table exists and has data
             const { data, error } = await this.supabase
                 .from('users')
                 .select('count')
@@ -308,25 +439,22 @@ class Database {
         }
     }
 
-    // ===== USER MANAGEMENT =====
     async createCEOUser(userData) {
         try {
-            console.log('🔄 Creating CEO user in database...');
+            console.log('🔄 Creating CEO user...');
             
-            // Validate data
             if (!userData.email || !userData.name || !userData.password) {
                 throw new Error('Missing required CEO information');
             }
             
-            // Create user object
             const ceoUser = {
                 email: userData.email,
                 name: userData.name,
-                role: 'General Manager', // Updated role
+                role: 'General Manager',
                 entry_code: userData.entryCode || '0000',
                 stock_code: userData.stockCode || '000000',
                 override_code: userData.overrideCode || '00000000',
-                password_hash: btoa(userData.password), // Basic encoding
+                password_hash: btoa(userData.password),
                 is_active: true,
                 created_at: new Date().toISOString(),
                 last_login: new Date().toISOString()
@@ -334,7 +462,6 @@ class Database {
             
             console.log('📝 Creating CEO:', ceoUser.email);
             
-            // Insert into database
             const { data, error } = await this.supabase
                 .from('users')
                 .insert([ceoUser])
@@ -379,7 +506,6 @@ class Database {
         try {
             console.log(`🔄 Creating ${userData.role} user...`);
             
-            // Use provided values
             const user = {
                 email: userData.email,
                 name: userData.name,
@@ -395,7 +521,6 @@ class Database {
                 last_login: null
             };
             
-            // Check if user already exists
             const existingUser = await this.getUserByEmail(userData.email);
             if (existingUser) {
                 console.log(`⚠️ User ${userData.email} already exists, skipping...`);
@@ -408,7 +533,6 @@ class Database {
                 .select();
             
             if (error) {
-                // If it's a duplicate error, continue
                 if (error.code === '23505') {
                     console.log(`⚠️ User ${userData.email} already exists (duplicate)`);
                     return { id: 'existing', email: userData.email };
@@ -421,7 +545,6 @@ class Database {
             
         } catch (error) {
             console.error(`Error creating ${userData.role}:`, error);
-            // Don't throw, just return null
             return null;
         }
     }
@@ -442,7 +565,6 @@ class Database {
                 return { success: false, message: 'Invalid entry code' };
             }
             
-            // Update last login
             await this.supabase
                 .from('users')
                 .update({ last_login: new Date().toISOString() })
@@ -469,11 +591,9 @@ class Database {
         }
     }
 
-    // ===== PRODUCTS & STOCK =====
     async getDashboardStats() {
         try {
-            // Get products with fixed prices
-            const products = await this.getAllProductsWithFixedPrices();
+            const products = await this.getAllProductsWithCorrectPrices();
             
             let totalStockValue = 0;
             let totalItems = 0;
@@ -493,7 +613,6 @@ class Database {
                 });
             }
             
-            // Get today's sales
             const today = new Date().toISOString().split('T')[0];
             const { data: sales } = await this.supabase
                 .from('sales')
@@ -565,7 +684,6 @@ class Database {
 
     async addStockToProduct(productId, quantity, userId, reason = 'Stock addition') {
         try {
-            // Get current product
             const { data: product, error: productError } = await this.supabase
                 .from('products')
                 .select('*')
@@ -578,7 +696,6 @@ class Database {
             
             const newQty = (product.current_qty || 0) + quantity;
             
-            // Update product
             const { error: updateError } = await this.supabase
                 .from('products')
                 .update({ 
@@ -589,7 +706,6 @@ class Database {
             
             if (updateError) throw updateError;
             
-            // Log stock change
             const { error: logError } = await this.supabase
                 .from('stock_changes')
                 .insert([{
@@ -618,147 +734,29 @@ class Database {
         }
     }
 
-    // Updated to use fixed prices
     async getAllProducts() {
         try {
-            return await this.getAllProductsWithFixedPrices();
+            return await this.getAllProductsWithCorrectPrices();
         } catch (error) {
             console.error('Error getting products:', error);
             return [];
         }
     }
-    
-    // New: Process sale with price fix
-    async processSale(saleData) {
-        try {
-            console.log('🔄 Processing sale with price fix...', saleData);
-            
-            // Get product with fixed price
-            const product = await this.getProductWithFixedPrice(saleData.product_id);
-            
-            if (!product) {
-                throw new Error('Product not found');
-            }
-            
-            // Check stock
-            if (product.current_qty < saleData.quantity) {
-                throw new Error(`Insufficient stock! Available: ${product.current_qty}, Requested: ${saleData.quantity}`);
-            }
-            
-            // Determine price based on quantity (wholesale for 50+, retail for less)
-            const isWholesale = saleData.quantity >= 50;
-            const unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
-            const totalPrice = unitPrice * saleData.quantity;
-            
-            console.log('💰 Price calculation:', {
-                quantity: saleData.quantity,
-                isWholesale,
-                unitPrice,
-                totalPrice,
-                productName: product.name
-            });
-            
-            // Insert sale
-            const { data: sale, error: saleError } = await this.supabase
-                .from('sales')
-                .insert([{
-                    product_id: saleData.product_id,
-                    product_name: product.name,
-                    quantity: saleData.quantity,
-                    unit_price: unitPrice,
-                    total_amount: totalPrice,
-                    total_price: totalPrice,
-                    sale_type: isWholesale ? 'WHOLESALE' : 'RETAIL',
-                    customer_name: saleData.customer_name,
-                    customer_phone: saleData.customer_phone,
-                    customer_type: saleData.customer_type || 'retail',
-                    sold_by: saleData.sold_by,
-                    payment_status: saleData.payment_status || 'paid',
-                    amount_paid: saleData.amount_paid || totalPrice,
-                    amount_owing: saleData.amount_owing || 0
-                }])
-                .select()
-                .single();
-            
-            if (saleError) throw new Error(`Sale failed: ${saleError.message}`);
-            
-            // Update stock
-            const newQty = product.current_qty - saleData.quantity;
-            await this.supabase
-                .from('products')
-                .update({ current_qty: newQty })
-                .eq('id', saleData.product_id);
-            
-            // Log stock change
-            await this.supabase
-                .from('stock_changes')
-                .insert([{
-                    product_id: saleData.product_id,
-                    product_name: product.name,
-                    change_type: 'SALE_DEDUCT',
-                    quantity: saleData.quantity,
-                    previous_qty: product.current_qty,
-                    new_qty: newQty,
-                    changed_by: saleData.sold_by,
-                    reason: `Sale: ${saleData.quantity} units`
-                }]);
-            
-            return {
-                success: true,
-                sale: sale,
-                price_info: {
-                    unit_price: unitPrice,
-                    total_price: totalPrice,
-                    price_type: isWholesale ? 'wholesale' : 'retail',
-                    quantity: saleData.quantity
-                }
-            };
-            
-        } catch (error) {
-            console.error('❌ Process sale error:', error);
-            return {
-                success: false,
-                error: error.message,
-                message: `Sale failed: ${error.message}`
-            };
-        }
-    }
 }
 
-// Initialize database when page loads
+// Initialize database
 window.addEventListener('load', () => {
     window.database = new Database();
     
-    // Also add price fix helper to window
-    window.fixAquafinaPrice = async function() {
-        if (!window.database || !window.database.isConnected) {
-            console.error('❌ Database not connected');
-            return;
-        }
-        
-        console.log('🔧 Manually fixing Aquafina 75cl price...');
-        
-        try {
-            // Find Aquafina 75cl product
-            const { data: products, error } = await window.database.supabase
-                .from('products')
-                .select('id, name, retail_price, wholesale_price')
-                .or('sku.eq.AQUAFINA-75CL,name.ilike.%Aquafina 75cl%');
-            
-            if (error) throw error;
-            
-            if (products && products.length > 0) {
-                products.forEach(product => {
-                    if (product.retail_price > 2500) {
-                        console.log(`Fixing ${product.name}: ${product.retail_price} → 2200`);
-                        window.database.fixAquafinaPrice(product.id);
-                    }
-                });
-            } else {
-                console.log('ℹ️ No Aquafina 75cl products found');
-            }
-        } catch (error) {
-            console.error('Manual fix error:', error);
-        }
+    // Add price checker
+    window.checkPrices = async function() {
+        console.log('🔍 Checking prices...');
+        const products = await window.database.getAllProductsWithCorrectPrices();
+        console.table(products.map(p => ({
+            Name: p.name,
+            SKU: p.sku,
+            'Retail (₦)': p.retail_price,
+            'Wholesale (₦)': p.wholesale_price
+        })));
     };
 });

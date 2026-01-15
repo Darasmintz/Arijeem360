@@ -1,6 +1,6 @@
 // config.js - Arijeem Insight 360 Configuration
 const CONFIG = {
-    // SUPABASE CREDENTIALS (⚠️ WARNING: EXPOSED - REVOKE THIS KEY!)
+    // SUPABASE CREDENTIALS
     SUPABASE_URL: 'https://twnbpdqssvzuvdlfzdum.supabase.co',
     SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3bmJwZHFzc3Z6dXZkbGZ6ZHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyNzQ0NzAsImV4cCI6MjA4Mzg1MDQ3MH0.XfPvPh4YZDES5gktKkj5KHtHmNTZmjye8LfDkBbpX-U',
     
@@ -8,6 +8,14 @@ const CONFIG = {
     SYSTEM_NAME: 'Arijeem Insight 360',
     COMPANY_NAME: 'Arijeem Multipurpose Enterprises',
     PARENT_COMPANY: 'Pepsi Corporation',
+    
+    // PRICE SETTINGS - FIXED WHOLESALE THRESHOLDS
+    PRICING: {
+        STANDARD_WHOLESALE_THRESHOLD: 24, // 2 cases of 12
+        DUBIC_CAN_WHOLESALE_THRESHOLD: 30,
+        WATER_WHOLESALE_THRESHOLD: 24, // Cases of 12 bottles
+        MIN_ORDER_QUANTITY: 1
+    },
     
     // ROLE CONFIGURATION
     ROLES: {

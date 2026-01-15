@@ -1,5 +1,5 @@
-// database.js - CORRECT VERSION - Shows ACTUAL prices from your list
-console.log('🚀 Loading Database Module with Correct Prices...');
+// database.js - CORRECT VERSION WITH ALL PRICE FIXES
+console.log('🚀 Loading Database Module with Fixed Prices...');
 
 class Database {
     constructor() {
@@ -37,14 +37,13 @@ class Database {
             'AMERICAN-COLA': { retail: 3700, wholesale: 3600 },
             
             // Cans
-            'DUBIC-CAN': { retail: 12000, wholesale: 11000, wholesaleThreshold: 30 },
+            'DUBIC-CAN': { retail: 12000, wholesale: 11000 },
             
             // Additional PET
             'SK-30CL': { retail: 3000, wholesale: 3000 },
             'SK-50CL': { retail: 4300, wholesale: 4200 },
-            'PET-60CL': { retail: 4250, wholesale: 4150 }, // Pepsi PET
-            'PET-40CL': { retail: 2320, wholesale: 2300 }, // Mirinda PET
-            // 'FANTA-PET': { retail: 2200, wholesale: 2150 }, // If you add this SKU
+            'PET-60CL': { retail: 4250, wholesale: 4150 },
+            'PET-40CL': { retail: 2320, wholesale: 2300 },
         };
     }
 
@@ -63,7 +62,6 @@ class Database {
             );
 
             console.log('✅ Database client created');
-            
             this.isConnected = await this.testConnection();
             
             if (this.isConnected) {
@@ -77,7 +75,7 @@ class Database {
         }
     }
 
-    // ===== ENSURE DATABASE HAS CORRECT PRICES =====
+    // ===== CORE FIX: ENSURE CORRECT PRICES =====
     async ensureCorrectPrices() {
         try {
             console.log('🔄 Ensuring database has correct prices...');
@@ -94,7 +92,6 @@ class Database {
                 const correctPrice = this.actualPrices[product.sku];
                 
                 if (correctPrice) {
-                    // Check if prices are wrong
                     const retailDiff = Math.abs(product.retail_price - correctPrice.retail);
                     const wholesaleDiff = Math.abs(product.wholesale_price - correctPrice.wholesale);
                     
@@ -114,7 +111,7 @@ class Database {
             });
             
             if (updatesNeeded.length > 0) {
-                console.log(`🔧 Need to fix ${updatesNeeded.length} products`);
+                console.log(`🔧 Fixing ${updatesNeeded.length} incorrect prices...`);
                 await this.fixProductPrices(updatesNeeded);
             } else {
                 console.log('✅ All products have correct prices');
@@ -128,7 +125,7 @@ class Database {
     async fixProductPrices(updates) {
         for (const update of updates) {
             try {
-                console.log(`  Fixing ${update.name}: ${update.current.retail}→${update.correct.retail}`);
+                console.log(`  Fixing ${update.name}: ₦${update.current.retail}→₦${update.correct.retail}`);
                 
                 const { error } = await this.supabase
                     .from('products')
@@ -140,7 +137,6 @@ class Database {
                     .eq('id', update.id);
                 
                 if (!error) {
-                    // Update cache
                     this.priceCache[update.id] = {
                         retail_price: update.correct.retail,
                         wholesale_price: update.correct.wholesale,
@@ -148,44 +144,23 @@ class Database {
                         name: update.name
                     };
                     
-                    // Log the correction
-                    await this.supabase
-                        .from('activity_logs')
-                        .insert([{
-                            user_name: 'System',
-                            user_role: 'Admin',
-                            action: 'PRICE_CORRECTION',
-                            details: {
-                                product_id: update.id,
-                                product_name: update.name,
-                                sku: update.sku,
-                                old_retail: update.current.retail,
-                                new_retail: update.correct.retail,
-                                old_wholesale: update.current.wholesale,
-                                new_wholesale: update.correct.wholesale,
-                                reason: 'Corrected to actual price list'
-                            },
-                            timestamp: new Date().toISOString()
-                        }]);
+                    await this.logPriceCorrection(update);
                 }
                 
             } catch (error) {
                 console.error(`  Error fixing ${update.name}:`, error);
             }
         }
-        
         console.log('✅ Price corrections completed');
     }
 
-    // ===== GET PRODUCT WITH CORRECT PRICE =====
+    // ===== FIXED: GET PRODUCT WITH CORRECT PRICE =====
     async getProductWithCorrectPrice(productId) {
         try {
-            // Check cache first
             if (this.priceCache[productId]) {
                 return this.priceCache[productId];
             }
             
-            // Fetch from database
             const { data: product, error } = await this.supabase
                 .from('products')
                 .select('*')
@@ -194,7 +169,6 @@ class Database {
             
             if (error) throw error;
             
-            // Apply correct price from our list
             const correctPrice = this.actualPrices[product.sku];
             let correctedProduct = { ...product };
             
@@ -207,15 +181,7 @@ class Database {
                 };
             }
             
-            // Update cache
-            this.priceCache[productId] = {
-                retail_price: correctedProduct.retail_price,
-                wholesale_price: correctedProduct.wholesale_price,
-                sku: correctedProduct.sku,
-                name: correctedProduct.name,
-                current_qty: correctedProduct.current_qty
-            };
-            
+            this.priceCache[productId] = correctedProduct;
             return correctedProduct;
             
         } catch (error) {
@@ -224,43 +190,31 @@ class Database {
         }
     }
     
-    async getAllProductsWithCorrectPrices() {
+    // ===== NEW FUNCTION: GET PRODUCT BY ID =====
+    async getProductById(productId) {
         try {
-            const { data: products, error } = await this.supabase
-                .from('products')
-                .select('*')
-                .order('name');
+            const product = await this.getProductWithCorrectPrice(productId);
+            if (!product) return null;
             
-            if (error) throw error;
-            
-            // Apply correct prices from our list
-            const correctedProducts = products.map(product => {
-                const correctPrice = this.actualPrices[product.sku];
-                
-                if (correctPrice) {
-                    return {
-                        ...product,
-                        retail_price: correctPrice.retail,
-                        wholesale_price: correctPrice.wholesale,
-                        price_source: 'actual_list'
-                    };
-                }
-                
-                return product;
-            });
-            
-            return correctedProducts;
-            
+            return {
+                id: product.id,
+                name: product.name,
+                sku: product.sku,
+                retail_price: product.retail_price,
+                wholesale_price: product.wholesale_price,
+                current_qty: product.current_qty,
+                min_qty: product.min_qty || 10
+            };
         } catch (error) {
-            console.error('❌ Get all products error:', error);
-            return [];
+            console.error('Error getting product by ID:', error);
+            return null;
         }
     }
-
-    // ===== PROCESS SALE WITH CORRECT PRICES =====
+    
+    // ===== CRITICAL FIX: PROCESS SALE WITHOUT DOUBLING =====
     async processSale(saleData) {
         try {
-            console.log('🔄 Processing sale...', saleData);
+            console.log('🔄 Processing sale...');
             
             const product = await this.getProductWithCorrectPrice(saleData.product_id);
             
@@ -272,32 +226,32 @@ class Database {
                 throw new Error(`Insufficient stock! Available: ${product.current_qty}, Requested: ${saleData.quantity}`);
             }
             
-            // SPECIAL CASE: Dubic Can (wholesale at 30+ units, not 50)
-            let isWholesale = saleData.quantity >= 50;
+            // FIXED WHOLESALE LOGIC
+            let isWholesale = false;
             let unitPrice = product.retail_price;
             
             if (product.sku === 'DUBIC-CAN') {
-                // Special wholesale threshold: 30+ units
-                isWholesale = saleData.quantity >= 30;
-                unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
+                isWholesale = saleData.quantity >= CONFIG.PRICING.DUBIC_CAN_WHOLESALE_THRESHOLD;
+            } else if (product.sku.includes('AQUAFINA') || product.sku.includes('NIRVANA') || product.sku.includes('EVA')) {
+                isWholesale = saleData.quantity >= CONFIG.PRICING.WATER_WHOLESALE_THRESHOLD;
             } else {
-                // Normal products: 50+ units for wholesale
-                isWholesale = saleData.quantity >= 50;
-                unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
+                isWholesale = saleData.quantity >= CONFIG.PRICING.STANDARD_WHOLESALE_THRESHOLD;
             }
             
+            unitPrice = isWholesale ? product.wholesale_price : product.retail_price;
+            
+            // CALCULATE TOTAL ONCE - NO DOUBLING
             const totalPrice = unitPrice * saleData.quantity;
             
-            console.log('💰 Price calculation:', {
+            console.log('💰 FINAL Price calculation:', {
                 product: product.name,
                 quantity: saleData.quantity,
-                isWholesale,
-                unitPrice,
-                totalPrice,
-                retail_price: product.retail_price,
-                wholesale_price: product.wholesale_price
+                unit_price: unitPrice,
+                is_wholesale: isWholesale,
+                total_price: totalPrice
             });
             
+            // INSERT SALE WITH SINGLE TOTAL FIELD
             const { data: sale, error: saleError } = await this.supabase
                 .from('sales')
                 .insert([{
@@ -305,21 +259,16 @@ class Database {
                     product_name: product.name,
                     quantity: saleData.quantity,
                     unit_price: unitPrice,
-                    total_amount: totalPrice,
-                    total_price: totalPrice,
+                    total_amount: totalPrice, // ONLY ONE TOTAL FIELD
                     sale_type: isWholesale ? 'WHOLESALE' : 'RETAIL',
                     customer_name: saleData.customer_name,
-                    customer_phone: saleData.customer_phone,
-                    customer_type: saleData.customer_type || 'retail',
                     sold_by: saleData.sold_by,
-                    payment_status: saleData.payment_status || 'paid',
-                    amount_paid: saleData.amount_paid || totalPrice,
-                    amount_owing: saleData.amount_owing || 0
+                    sale_date: new Date().toISOString()
                 }])
                 .select()
                 .single();
             
-            if (saleError) throw new Error(`Sale failed: ${saleError.message}`);
+            if (saleError) throw saleError;
             
             // Update stock
             const newQty = product.current_qty - saleData.quantity;
@@ -364,8 +313,61 @@ class Database {
         }
     }
 
-    // ===== REST OF DATABASE METHODS (same as before) =====
-    waitForConfig() {
+    // ===== SUPPORT FUNCTIONS =====
+    async logPriceCorrection(update) {
+        await this.supabase
+            .from('activity_logs')
+            .insert([{
+                user_name: 'System',
+                user_role: 'Admin',
+                action: 'PRICE_CORRECTION',
+                details: {
+                    product_id: update.id,
+                    product_name: update.name,
+                    sku: update.sku,
+                    old_retail: update.current.retail,
+                    new_retail: update.correct.retail,
+                    old_wholesale: update.current.wholesale,
+                    new_wholesale: update.correct.wholesale,
+                    reason: 'Corrected to actual price list'
+                },
+                timestamp: new Date().toISOString()
+            }]);
+    }
+
+    async getAllProductsWithCorrectPrices() {
+        try {
+            const { data: products, error } = await this.supabase
+                .from('products')
+                .select('*')
+                .order('name');
+            
+            if (error) throw error;
+            
+            const correctedProducts = products.map(product => {
+                const correctPrice = this.actualPrices[product.sku];
+                
+                if (correctPrice) {
+                    return {
+                        ...product,
+                        retail_price: correctPrice.retail,
+                        wholesale_price: correctPrice.wholesale,
+                        price_source: 'actual_list'
+                    };
+                }
+                
+                return product;
+            });
+            
+            return correctedProducts;
+            
+        } catch (error) {
+            console.error('❌ Get all products error:', error);
+            return [];
+        }
+    }
+
+    async waitForConfig() {
         return new Promise((resolve) => {
             let attempts = 0;
             const check = () => {
@@ -412,8 +414,6 @@ class Database {
 
     async checkSystemSetup() {
         try {
-            console.log('🔄 Checking if system is set up...');
-            
             const { data, error } = await this.supabase
                 .from('users')
                 .select('count')
@@ -430,7 +430,6 @@ class Database {
             
             const userCount = data?.[0]?.count || 0;
             console.log(`📊 Found ${userCount} users in database`);
-            
             return userCount > 0;
             
         } catch (error) {
@@ -441,12 +440,6 @@ class Database {
 
     async createCEOUser(userData) {
         try {
-            console.log('🔄 Creating CEO user...');
-            
-            if (!userData.email || !userData.name || !userData.password) {
-                throw new Error('Missing required CEO information');
-            }
-            
             const ceoUser = {
                 email: userData.email,
                 name: userData.name,
@@ -456,21 +449,15 @@ class Database {
                 override_code: userData.overrideCode || '00000000',
                 password_hash: btoa(userData.password),
                 is_active: true,
-                created_at: new Date().toISOString(),
-                last_login: new Date().toISOString()
+                created_at: new Date().toISOString()
             };
-            
-            console.log('📝 Creating CEO:', ceoUser.email);
             
             const { data, error } = await this.supabase
                 .from('users')
                 .insert([ceoUser])
                 .select();
             
-            if (error) {
-                console.error('❌ CEO creation error:', error);
-                throw error;
-            }
+            if (error) throw error;
             
             console.log('✅ CEO user created:', data[0].id);
             return data[0];
@@ -504,26 +491,23 @@ class Database {
 
     async createUser(userData) {
         try {
-            console.log(`🔄 Creating ${userData.role} user...`);
-            
             const user = {
                 email: userData.email,
                 name: userData.name,
                 role: userData.role,
                 entry_code: userData.entryCode || '0000',
-                stock_code: (userData.role === 'Admin' || userData.role === 'Manager' || userData.role === 'General Manager') 
+                stock_code: (userData.role === 'Admin' || userData.role === 'General Manager') 
                           ? (userData.stockCode || '000000') : null,
                 override_code: userData.role === 'General Manager' 
                              ? (userData.overrideCode || '00000000') : null,
                 password_hash: btoa(userData.password),
                 is_active: true,
-                created_at: new Date().toISOString(),
-                last_login: null
+                created_at: new Date().toISOString()
             };
             
             const existingUser = await this.getUserByEmail(userData.email);
             if (existingUser) {
-                console.log(`⚠️ User ${userData.email} already exists, skipping...`);
+                console.log(`⚠️ User ${userData.email} already exists`);
                 return existingUser;
             }
             
@@ -532,13 +516,7 @@ class Database {
                 .insert([user])
                 .select();
             
-            if (error) {
-                if (error.code === '23505') {
-                    console.log(`⚠️ User ${userData.email} already exists (duplicate)`);
-                    return { id: 'existing', email: userData.email };
-                }
-                throw error;
-            }
+            if (error) throw error;
             
             console.log(`✅ ${userData.role} created:`, data[0].email);
             return data[0];
@@ -551,17 +529,13 @@ class Database {
 
     async verifyLogin(email, password, entryCode) {
         try {
-            console.log(`🔄 Verifying login for: ${email}`);
-            
             const user = await this.getUserByEmail(email);
             
             if (!user) {
-                console.log(`❌ User not found: ${email}`);
                 return { success: false, message: 'Invalid credentials' };
             }
             
             if (user.entry_code !== entryCode) {
-                console.log(`❌ Invalid entry code for: ${email}`);
                 return { success: false, message: 'Invalid entry code' };
             }
             
@@ -569,8 +543,6 @@ class Database {
                 .from('users')
                 .update({ last_login: new Date().toISOString() })
                 .eq('id', user.id);
-            
-            console.log(`✅ Login successful: ${email} (${user.role})`);
             
             return {
                 success: true,
@@ -666,6 +638,23 @@ class Database {
         }
     }
 
+    async getRecentSales(limit = 5) {
+        try {
+            const { data, error } = await this.supabase
+                .from('sales')
+                .select('*')
+                .order('sale_date', { ascending: false })
+                .limit(limit);
+            
+            if (error) throw error;
+            return data || [];
+            
+        } catch (error) {
+            console.error('Error getting sales:', error);
+            return [];
+        }
+    }
+
     async getActiveUserCount() {
         try {
             const { count, error } = await this.supabase
@@ -706,7 +695,7 @@ class Database {
             
             if (updateError) throw updateError;
             
-            const { error: logError } = await this.supabase
+            await this.supabase
                 .from('stock_changes')
                 .insert([{
                     product_id: productId,
@@ -719,8 +708,6 @@ class Database {
                     reason: reason,
                     timestamp: new Date().toISOString()
                 }]);
-            
-            if (logError) throw logError;
             
             return { 
                 success: true, 
@@ -742,21 +729,38 @@ class Database {
             return [];
         }
     }
+
+    async getAllUsers() {
+        try {
+            const { data, error } = await this.supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+            
+        } catch (error) {
+            console.error('Error getting users:', error);
+            return [];
+        }
+    }
 }
 
 // Initialize database
 window.addEventListener('load', () => {
     window.database = new Database();
     
-    // Add price checker
+    // Debug helper
     window.checkPrices = async function() {
-        console.log('🔍 Checking prices...');
+        console.log('🔍 Checking all prices...');
         const products = await window.database.getAllProductsWithCorrectPrices();
         console.table(products.map(p => ({
             Name: p.name,
             SKU: p.sku,
             'Retail (₦)': p.retail_price,
-            'Wholesale (₦)': p.wholesale_price
+            'Wholesale (₦)': p.wholesale_price,
+            Stock: p.current_qty
         })));
     };
 });

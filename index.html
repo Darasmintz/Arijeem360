@@ -1098,6 +1098,61 @@
     <script src="config.js"></script>
     <script src="database.js"></script>
     <script src="script.js"></script>
+
+    <!-- Add this JavaScript validation to prevent double calculations -->
+<script>
+// Prevent multiple event triggers
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.getElementById('saleQuantity');
+    const productSelect = document.getElementById('saleProduct');
+    const saleTypeSelect = document.getElementById('saleType');
+    
+    let lastQuantity = '';
+    let lastProduct = '';
+    let lastSaleType = '';
+    
+    // Debounce function to prevent multiple calculations
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Apply debouncing to inputs
+    if (quantityInput) {
+        quantityInput.addEventListener('input', debounce(function() {
+            if (quantityInput.value !== lastQuantity) {
+                lastQuantity = quantityInput.value;
+                updateSaleTotal();
+            }
+        }, 300));
+    }
+    
+    if (productSelect) {
+        productSelect.addEventListener('change', debounce(function() {
+            if (productSelect.value !== lastProduct) {
+                lastProduct = productSelect.value;
+                updateSalePrice();
+            }
+        }, 300));
+    }
+    
+    if (saleTypeSelect) {
+        saleTypeSelect.addEventListener('change', debounce(function() {
+            if (saleTypeSelect.value !== lastSaleType) {
+                lastSaleType = saleTypeSelect.value;
+                updateSalePrice();
+            }
+        }, 300));
+    }
+});
+</script>
     
     <!-- Simple initialization only -->
     <script>
@@ -1127,4 +1182,5 @@
 
 </body>
 </html>
+
 
